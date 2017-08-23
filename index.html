@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Berthing windown</title>
+    <link rel="stylesheet" href="assets/css/font-awesome.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+
+    <script src="assets/lib/jquery-3.2.1.min.js"></script>
+    <script src="assets/js/moment.js"></script>
+    <script src="assets/js/d3.v4.min.js"></script>
+    <script src="assets/js/lodash.min.js"></script>
+
+    <script src="assets/js/common.js"></script>
+    <script src="assets/js/map-canvas.js"></script>
+    <script src="assets/js/main.js"></script>
+
+</head>
+
+<body>
+<div id="berthing-windown">
+    <div class="wraper">
+        <div id="map-canvas">
+            <div id="ruler-top">
+                <div class="toolbar">
+                    <div class="row" style="margin-top: 18px;">
+                        <i class="fa fa-arrows-h" style="font-size: 25px;margin-left: 2px;margin-top: 5px;float:left;"></i>
+                        <a href="javascript:;" class="btn btn-primary btn-circle btn-lg zoom-width" name="btn-zoom-in" title="Zoom in by hozirontal">
+                            <i class="fa fa-search-plus"></i>
+                        </a>
+                        <a href="javascript:;" class="btn btn-primary btn-circle btn-lg zoom-width" name="btn-zoom-out" title="Zoom out by hozirontal">
+                            <i class="fa fa-search-minus"></i>
+                        </a>
+                    </div>
+                    <div class="row">
+                        <i class="fa fa-arrows-v" style="font-size: 25px;margin-left: 2px;margin-top: 5px;float:left;margin-right: 8px;margin-left: 8px;"></i>
+                        <a href="javascript:;" class="btn btn-primary btn-circle btn-lg zoom-height" name="btn-zoom-in" title="Zoom in by hozirontal">
+                            <i class="fa fa-search-plus"></i>
+                        </a>
+                        <a href="javascript:;" class="btn btn-primary btn-circle btn-lg zoom-height" name="btn-zoom-out" title="Zoom out by hozirontal">
+                            <i class="fa fa-search-minus"></i>
+                        </a>
+                    </div>
+                </div>
+                <div id="ruler-top-content"></div>
+            </div>
+            <div id="ruller-left"></div>
+            <div id="map-content"></div>
+        </div>
+        <div id="bottom-scroll">
+            <div id="scroll-content" style="height: 10px;"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
