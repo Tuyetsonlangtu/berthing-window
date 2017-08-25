@@ -276,6 +276,16 @@ var MapCanvas = (function () {
     vslBottom: null,
     vslHeight: null
   }
+  var _d3VslSelected = null;
+  var _isFlag = false;
+  var _keyCode = {
+    left: 37,
+    up: 38,
+    right: 39,
+    down: 40,
+    esc: 27,
+    del: 46
+  }
 
   function _draw() {
     var strDate = '2017-05-31', number = 5;
@@ -877,12 +887,14 @@ var MapCanvas = (function () {
         var vslIdx = target.attr('vsl-group-idx');
         target.classed("active", true);
         _vesselMouseover(vslIdx);
+        _isFlag = true;
       })
       .on("mouseout", function () {
         var target = d3.select(this);
         var vslIdx = target.attr('vsl-group-idx');
         target.classed("active", false);
-        _vesselMouseout(vslIdx)
+        _vesselMouseout(vslIdx);
+        _isFlag = false;
       })
 
     //draw mooring box
@@ -922,6 +934,7 @@ var MapCanvas = (function () {
 
     //draw vessel
     rectGroup.append("rect")
+      .attr("class", "vessel-rect")
       .attr("vsl-idx", vslData.id)
       .attr("fill", vslData.vessel_color)
       .attr("stroke", "red")
@@ -931,11 +944,10 @@ var MapCanvas = (function () {
       .attr("width", vslWidth)
       .attr("height", vslHeight - 1)
       .datum({x: vslLeft, y: vslTop})
-      .call(d3.drag().on("drag", function (d){
-        d3.select(this)
-          // .attr("x", d.x = Math.max(0, d3.event.x))
-          // .attr("y", d.y = Math.max(0, d3.event.y));
-      }));
+      .on("click", function () {
+        _d3VslSelected = d3.select(this);
+        d3.select(this).classed("active", true);
+      });
 
     rectGroup.append("rect")
       .attr("class", "resize-control")
@@ -972,7 +984,7 @@ var MapCanvas = (function () {
         var vslIdx = d3.select(this).attr('resize-bottom-idx');
         $("g.vessel-group[vsl-group-idx=" + vslIdx + "]").attr('drag-stop', true);
       })
-      .datum({x: vslLeft + vslWidth / 2 - _dragbarW / 2, y: vslTop})
+      .datum({x: vslLeft + vslWidth / 2 - _dragbarW / 2, y: vslBottom})
       .call(d3.drag()
         .on("drag", _resizeBottom)
         .on("end", _vesselResized));
@@ -1135,20 +1147,20 @@ var MapCanvas = (function () {
       .text(textRight)
 
     rectGroup.datum({x: 0, y: 0})
+      .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
       .call(d3.drag()
-        .on("start", _dragstarted)
         .on("drag", _dragged)
         .on("end", _dragended));
   }
 
   function _vesselMouseover(vslIdx) {
-    // $("rect[resize-top-idx=" + vslIdx + "]").show();
-    // $("rect[resize-bottom-idx=" + vslIdx + "]").show();
+    $("rect[resize-top-idx=" + vslIdx + "]").show();
+    $("rect[resize-bottom-idx=" + vslIdx + "]").show();
   }
 
   function _vesselMouseout(vslIdx) {
-    // $("rect[resize-top-idx=" + vslIdx + "]").hide();
-    // $("rect[resize-bottom-idx=" + vslIdx + "]").hide();
+    $("rect[resize-top-idx=" + vslIdx + "]").hide();
+    $("rect[resize-bottom-idx=" + vslIdx + "]").hide();
   }
 
   function _reCalcVesselInfo(target, x, y) {
@@ -1170,8 +1182,8 @@ var MapCanvas = (function () {
     var originLeft = Common.getPosByBerthDir(_zoomOutWidth(vslLeft), _mapWidth, vslInfo.berthDir);
     var originRight = Common.getPosByBerthDir(_zoomOutWidth(vslRight), _mapWidth, vslInfo.berthDir);
     var mooringHead, mooringStern;
-    console.log("bittLeft: ", bittLeft.name);
-    console.log("bittRight: ", bittRight.name);
+    // console.log("bittLeft: ", bittLeft.name);
+    // console.log("bittRight: ", bittRight.name);
     if (bittLeft && bittRight) {
       if (vslInfo.vslDir == Common.vesselDir.leftRight) {
         mooringHead = bittRight.idx;
@@ -1290,7 +1302,6 @@ var MapCanvas = (function () {
   }
 
   function _updateVslDrawInfo() {
-    console.log("_updateVslDrawInfo: ", _vslDrawInfo);
     var d3Group = $("g.vessel-group[vsl-group-idx=" + _vslDrawInfo.id + "]");
     if (!d3Group) return;
 
@@ -1447,52 +1458,97 @@ var MapCanvas = (function () {
       return 0;
   }
 
-  function _dragstarted(d) {
-    d3.select(this).raise().classed("active", true);
-  }
-
   function _dragged(d) {
-    if(d3.select(this).attr('drag-stop')) return;
+    if (d3.select(this).attr('drag-stop')) return;
     if (d3.event.x == _currentPoint.x && d3.event.y == _currentPoint.y) {
       console.log("position don't change");
       return;
     }
     _currentPoint.x = d3.event.x;
     _currentPoint.y = d3.event.y;
+    _moveVessel(d3.select(this), d3.select(this).attr('vsl-group-idx'), d3.event.x, d3.event.y, d, true, false , false);
+  }
 
-    var vslIdx = d3.select(this).attr('vsl-group-idx');
-    var mooringTarget = $("rect[mooring-idx=" + vslIdx + "]");
+  function _moveVessel(target, vslIdx, dx, dy, d, isDrag, isUpDown, isLeftRight) {
     var vslInfo = _getVslDrawInfo(vslIdx);
     var left = 0, width = 0, right = 0, top = 0, bottom = 0;
-    if (vslInfo && mooringTarget) {
-      width = vslInfo.vslWidth + 2 * _zoomInWidth(_mooringDistance);
+
+    if (vslInfo) {
       left = vslInfo.vslLeft - _zoomInWidth(_mooringDistance);
       right = vslInfo.vslRight + _zoomInWidth(_mooringDistance);
       top = vslInfo.vslTop;
       bottom = vslInfo.vslBottom;
-
-      mooringTarget.attr('x', left);
-      mooringTarget.attr('width', width);
-
-      var bittLeftText = $("text[mooring-text-left=" + vslIdx + "]");
-      if (bittLeftText) bittLeftText.attr('x', left + 2);
-
-      var bittRightText = $("text[mooring-text-right=" + vslIdx + "]");
-      if (bittRightText) bittRightText.attr('x', right - 2);
-
       var minPos = _getMinBerthPos();
       var maxPos = _getMaxBerthPos();
       var gridHeight = _timeChange == 30 ? (_zoomInHeight(Common.gridHeight) / 2) : _zoomInHeight(Common.gridHeight);
-      var gridY = Math.round(d3.event.y / gridHeight) * gridHeight;
-      _dx = Math.max(-left + minPos, Math.min(maxPos - right, d3.event.x));
-      _dy = Math.max(-top, Math.min(_zoomInHeight(_mapHeight) - bottom, gridY));
-      d3.select(this).attr("transform", "translate(" + (d.x = _dx) + "," + (d.y = _dy) + ")")
+      var gridY = Math.round(dy / gridHeight) * gridHeight;
+      var x = Math.max(-left + minPos, Math.min(maxPos - right, dx));
+      var y = Math.max(-top, Math.min(_zoomInHeight(_mapHeight) - bottom, gridY));
+      if (isUpDown && y == _dy) return;
+      if (isLeftRight && x == _dx) return;
+
+      _dx = x;
+      _dy = y;
+      if (d) {
+        d.x = _dx;
+        d.y = _dy;
+      }
+
+      if (isDrag || isLeftRight) {
+        width = vslInfo.vslWidth + 2 * _zoomInWidth(_mooringDistance);
+        var mooringTarget = $("rect[mooring-idx=" + vslIdx + "]");
+        var bittLeftText = $("text[mooring-text-left=" + vslIdx + "]");
+        if (bittLeftText) bittLeftText.attr('x', left + 2);
+
+        var bittRightText = $("text[mooring-text-right=" + vslIdx + "]");
+        if (bittRightText) bittRightText.attr('x', right - 2);
+
+        mooringTarget.attr('x', left);
+        mooringTarget.attr('width', width);
+      }
+      target.attr("transform", "translate(" + _dx + "," + _dy + ")");
+      if (isUpDown || isLeftRight) _reCalcVesselInfo(target, _dx, _dy);
     }
   }
 
+  function _getTranslateVal(string) {
+    var arr = string.substring(string.indexOf("(") + 1, string.indexOf(")")).split(",");
+    return {
+      x: parseFloat(arr[0]),
+      y: parseFloat(arr[1])
+    }
+  }
+
+  function _moveUpDown(type) {
+    if (!_d3VslSelected) return;
+    var vslIdx = _d3VslSelected.attr('vsl-idx');
+    var target = d3.select(".vessel-group[vsl-group-idx=" + vslIdx + "]");
+    var translate = _getTranslateVal(target.attr('transform'));
+    var dx = translate.x, dy = translate.y;
+    var gridHeight = _timeChange == 30 ? (_zoomInHeight(Common.gridHeight) / 2) : _zoomInHeight(Common.gridHeight);
+    if (type == _keyCode.down)
+      dy += gridHeight;
+    else
+      dy -= gridHeight;
+    _moveVessel(target, vslIdx, dx, dy, null, false, true, false);
+  }
+
+  function _moveLeftRight(type) {
+    if (!_d3VslSelected) return;
+    var mooringDistance = _zoomInWidth(_mooringDistance);
+    var vslIdx = _d3VslSelected.attr('vsl-idx');
+    var target = d3.select(".vessel-group[vsl-group-idx=" + vslIdx + "]");
+    var translate = _getTranslateVal(target.attr('transform'));
+    var dx = translate.x, dy = translate.y;
+    if (type == _keyCode.left)
+      dx -= mooringDistance;
+    else
+      dx += mooringDistance;
+    _moveVessel(target, vslIdx, dx, dy, null, false, false, true);
+  }
+
   function _dragended(d) {
-    d3.select(this).classed("active", false);
-    if(d3.select(this).attr('drag-stop')) return;
+    if (d3.select(this).attr('drag-stop')) return;
     if (_dx && _dy) {
       _reCalcVesselInfo(d3.select(this), _dx, _dy);
     }
@@ -1502,9 +1558,10 @@ var MapCanvas = (function () {
     var vslId = d3.select(this).attr('resize-bottom-idx');
     var vslInfo = _getVslDrawInfo(vslId);
     if (_heightTMP == 0) _heightTMP = vslInfo.vslHeight;
-    var vslBottom = Math.max(d.y + (_dragbarW / 2), Math.min(_zoomInHeight(_mapHeight), d.y + _heightTMP + d3.event.dy));
-    _heightTMP = vslBottom - d.y;
-
+    var gridHeight = _timeChange == 30 ? (_zoomInHeight(Common.gridHeight) / 2) : _zoomInHeight(Common.gridHeight);
+    var gridY = Math.round(d3.event.y / gridHeight) * gridHeight;
+    var vslBottom = d.y = Math.max(vslInfo.vslTop, Math.min(_zoomInHeight(_mapHeight), gridY));
+    _heightTMP = vslBottom - vslInfo.vslTop;
     d3.select(this).attr("y", function (d) {
       return vslBottom - (_dragbarW / 2)
     });
@@ -1555,7 +1612,7 @@ var MapCanvas = (function () {
     _vslDrawInfo.id = vslId;
     _vslDrawInfo.vslTop = vslBottom - _heightTMP;
     _vslDrawInfo.vslHeight = _heightTMP;
-    _vslDrawInfo.vslBottom =  vslBottom;
+    _vslDrawInfo.vslBottom = vslBottom;
 
     var endDate = _getVesselDateFromPos(vslBottom);
     _vslInfo.id = vslId;
@@ -1569,11 +1626,9 @@ var MapCanvas = (function () {
     if (_heightTMP == 0) _heightTMP = vslInfo.vslHeight;
     var oldy = d.y;
     var gridHeight = _timeChange == 30 ? (_zoomInHeight(Common.gridHeight) / 2) : _zoomInHeight(Common.gridHeight);
-    var vslTop = d.y = Math.max(0, Math.min(d.y + _heightTMP - (_dragbarW / 2), d3.event.y));
-    console.log("vslTop: ", vslTop,  d.y);
-
+    var gridY = Math.round(d3.event.y / gridHeight) * gridHeight;
+    var vslTop = d.y = Math.max(0, Math.min(d.y + _heightTMP - (_dragbarW / 2), gridY));
     _heightTMP = _heightTMP + (oldy - d.y);
-
     //Update pos Resize Ctrl
     d3.select(this).attr("y", function (d) {
       return d.y - _dragbarW / 2;
@@ -1598,7 +1653,7 @@ var MapCanvas = (function () {
 
     //Head
     var d3Head = d3.select("g[head-idx=" + vslId + "]");
-    if(d3Head) {
+    if (d3Head) {
       var triangleTop = vslTop + _heightTMP / 2 - 13;
       var trxOrigin = d3Head.attr('trxOrigin');
       d3Head.attr("transform", "translate(" + trxOrigin + "," + triangleTop + ")");
@@ -1609,7 +1664,7 @@ var MapCanvas = (function () {
 
     //Vessel Status
     var d3VslStt = d3.select("g[vsl-status=" + vslId + "]");
-    if(d3VslStt) {
+    if (d3VslStt) {
       var triangleTop = vslTop + 1;
       var trxOrigin = d3VslStt.attr('trxOrigin');
       d3VslStt.attr("transform", "translate(" + trxOrigin + "," + triangleTop + ")");
@@ -1628,7 +1683,8 @@ var MapCanvas = (function () {
 
     var startDate = _getVesselDateFromPos(vslTop);
     _vslInfo.id = vslId;
-    _vslInfo.eta_date = moment(startDate).format('DD/MM/YYYY HH:mm');;
+    _vslInfo.eta_date = moment(startDate).format('DD/MM/YYYY HH:mm');
+    ;
     _vslInfo.etd_date = null;
   }
 
@@ -1641,6 +1697,7 @@ var MapCanvas = (function () {
 
     //Reset data
     _heightTMP = 0;
+    $("g.vessel-group").removeAttr('drag-stop');
   }
 
   function _initScroll() {
@@ -1693,8 +1750,32 @@ var MapCanvas = (function () {
 
     $(document).on('click', '#map-content', function (e) {
       $("g.vessel-group").removeAttr('drag-stop');
-      console.log("click");
-    })
+      if (!_isFlag && _d3VslSelected) {
+        _d3VslSelected.classed("active", false);
+        _d3VslSelected = null;
+      }
+    });
+
+    $(document).keydown(function (e) {
+      switch (e.keyCode) {
+        case _keyCode.esc:
+          if (_d3VslSelected) {
+            _d3VslSelected.classed("active", false);
+            _d3VslSelected = null;
+          }
+          break;
+        case _keyCode.down:
+        case _keyCode.up:
+          _moveUpDown(e.keyCode);
+          e.preventDefault();
+          break;
+        case _keyCode.left:
+        case _keyCode.right:
+          _moveLeftRight(e.keyCode)
+          e.preventDefault();
+          break;
+      }
+    });
   }
 
   function _enableOrDisableZoom() {

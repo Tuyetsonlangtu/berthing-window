@@ -179,5 +179,11 @@ rect, line {
 }
 
 .resize-control {
-  /*display: none;*/
+  display: none;
+}
+
+.vessel-rect.active{
+  stroke: #00FF28;
+  /*stroke-dasharray: 8,4;*/
+  opacity: 0.9;
 }
