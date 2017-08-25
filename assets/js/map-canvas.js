@@ -682,6 +682,7 @@ var MapCanvas = (function () {
       _bitts[i].end_position = _zoomInWidth(Common.getPosByBerthDir(_bitts[i].end_position_original, width, berthDir));
 
       lineBittGroup.append("line")
+        .attr("bitt-idx", _bitts[i].id)
         .attr("stroke-width", '5px')
         .attr("x1", xPos)
         .attr("y1", yPos - 8)
@@ -689,8 +690,9 @@ var MapCanvas = (function () {
         .attr("y2", yPos)
         .attr("stroke", "black");
 
-      lineGroup.append("text")
-        .style("fill", "#000")
+      lineBittGroup.append("text")
+        .attr("fill", "#000")
+        .attr("bitt-text-idx", _bitts[i].id)
         .attr("x", xPos)
         .attr("y", yPos - 15)
         .attr("text-anchor", "middle")
@@ -944,10 +946,7 @@ var MapCanvas = (function () {
       .attr("width", vslWidth)
       .attr("height", vslHeight - 1)
       .datum({x: vslLeft, y: vslTop})
-      .on("click", function () {
-        _d3VslSelected = d3.select(this);
-        d3.select(this).classed("active", true);
-      });
+      .on("click", _vesselClicked);
 
     rectGroup.append("rect")
       .attr("class", "resize-control")
@@ -1153,6 +1152,35 @@ var MapCanvas = (function () {
         .on("end", _dragended));
   }
 
+  function _vesselClicked(target){
+    _d3VslSelected = d3.select(this);
+    d3.select(this).classed("active", true);
+    var vslId = d3.select(this).attr("vsl-idx");
+    var vslData = _getVesselById(vslId);
+    if(!vslData) return;
+    _setBittColor(vslData.mooring_head);
+    _setBittColor(vslData.mooring_stern);
+  }
+
+  function _setBittColor(id) {
+    $(".bitts-top line[bitt-idx='" + id + "']")
+      .attr("bitt-selected", true)
+      .attr("stroke", "red");
+    $(".bitts-top text[bitt-text-idx='" + id + "']")
+      .attr("bitt-text-selected", true)
+      .attr("fill", "red");
+  }
+
+  function _removeBittSelected() {
+    $(".bitts-top line[bitt-selected='true']")
+      .attr("bitt-selected", '')
+      .attr("stroke", "black");
+
+    $(".bitts-top text[bitt-text-selected='true']")
+      .attr("bitt-selected", '')
+      .attr("fill", "black");
+  }
+
   function _vesselMouseover(vslIdx) {
     $("rect[resize-top-idx=" + vslIdx + "]").show();
     $("rect[resize-bottom-idx=" + vslIdx + "]").show();
@@ -1193,6 +1221,10 @@ var MapCanvas = (function () {
         mooringHead = bittLeft.idx;
         mooringStern = bittRight.idx;
       }
+
+      _removeBittSelected();
+      _setBittColor(mooringHead);
+      _setBittColor(mooringStern);
 
       var mooringTarget = $("rect[mooring-idx=" + vslIdx + "]");
       var mooringWidth = Math.abs(bittLeft.start_position - bittRight.start_position);
@@ -1264,7 +1296,7 @@ var MapCanvas = (function () {
   function _getVesselById(id) {
     return _.find(_vesselData, function (obj) {
       return obj.id == id;
-    });
+    })
   }
 
   function _getVslDrawInfo(vslIdx) {
@@ -1753,6 +1785,7 @@ var MapCanvas = (function () {
       if (!_isFlag && _d3VslSelected) {
         _d3VslSelected.classed("active", false);
         _d3VslSelected = null;
+        _removeBittSelected();
       }
     });
 
@@ -1762,6 +1795,7 @@ var MapCanvas = (function () {
           if (_d3VslSelected) {
             _d3VslSelected.classed("active", false);
             _d3VslSelected = null;
+            _removeBittSelected();
           }
           break;
         case _keyCode.down:
