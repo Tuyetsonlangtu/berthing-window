@@ -187,3 +187,23 @@ rect, line {
   /*stroke-dasharray: 8,4;*/
   opacity: 0.9;
 }
+
+.ruler-line{
+  display: none;
+}
+
+.ruler-line.active{
+  display: block;
+}
+
+.grid-detail.hide {
+  visibility: hidden;
+}
+
+.bridge.hide{
+  visibility: hidden;
+}
+
+.ramp.hide {
+  visibility: hidden;
+}

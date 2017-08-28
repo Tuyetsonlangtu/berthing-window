@@ -26,7 +26,7 @@ var Common = (function () {
     height: 1000,
     strokeWidth: 1,
     margin: {
-      top: 1,
+      top: 0,
       right: 0,
       bottom: 2,
       left: 0
@@ -39,7 +39,7 @@ var Common = (function () {
     height: 1000,
     strokeWidth: 1,
     margin: {
-      top: 1,
+      top: 0,
       right: 15,
       bottom: 2,
       left: 15

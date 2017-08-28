@@ -204,7 +204,7 @@ var MapCanvas = (function () {
     "ata_date": "",
     "atb_date": "",
     "atd_date": "",
-    "stern_ramp": {"ramp_width": 8, "ramp_start_position": 0, "ramp_degree": 150, "ramp_occupied_distance": 16},
+    "stern_ramp": {"ramp_width": 8, "ramp_start_position": 2, "ramp_degree": 150, "ramp_occupied_distance": 16},
     "side_ramp": {"ramp_width": 5, "ramp_start_position": 30, "ramp_degree": 90, "ramp_occupied_distance": 5},
     "operator_cd": "ECL",
     "mooring_head": "1",
@@ -240,7 +240,7 @@ var MapCanvas = (function () {
     "ata_date": "",
     "atb_date": "",
     "atd_date": "",
-    "stern_ramp": {"ramp_width": 8, "ramp_start_position": 0, "ramp_degree": 150, "ramp_occupied_distance": 16},
+    "stern_ramp": {"ramp_width": 8, "ramp_start_position": 2, "ramp_degree": 150, "ramp_occupied_distance": 16},
     "side_ramp": {"ramp_width": 5, "ramp_start_position": 30, "ramp_degree": 90, "ramp_occupied_distance": 5},
     "operator_cd": "NYK",
     "mooring_head": "13",
@@ -260,7 +260,7 @@ var MapCanvas = (function () {
     x: 0,
     y: 0
   }
-  var _dragbarW = _dragbarH = 12;
+  var _dragbarW = _dragbarH = 10;
   var _heightTMP = 0;
   var _vslInfo = {
     id: null,
@@ -286,6 +286,8 @@ var MapCanvas = (function () {
     esc: 27,
     del: 46
   }
+  var _showBridge = true, _showRamp = true, _showGridDetail = true;
+  var _vslColorType = 'calling_status_color'; //calling_status_color, calling_type_color, service_lane_color
 
   function _draw() {
     var strDate = '2017-05-31', number = 5;
@@ -410,9 +412,9 @@ var MapCanvas = (function () {
     lineGroup.append("line")
       .attr("stroke-width", Common.rulerLeft.strokeWidth + 'px')
       .attr("x1", 1)
-      .attr("y1", 0)
+      .attr("y1", 1)
       .attr("x2", widthCal)
-      .attr("y2", 0)
+      .attr("y2", 1)
     lineGroup.append("line")
       .attr("stroke-width", Common.rulerLeft.strokeWidth + 'px')
       .attr("x1", 1)
@@ -496,10 +498,13 @@ var MapCanvas = (function () {
       .attr("width", widthCal + Common.mapContent.margin.left + Common.mapContent.margin.right)
       .attr("height", heightCal + Common.mapContent.margin.top + Common.mapContent.margin.bottom)
       .append("g")
+      .attr("transform", "translate(0,0)");
+
+  var ctrl = _mapContentSVG.append("g")
       .attr("transform",
         "translate(" + Common.mapContent.margin.left + "," + Common.mapContent.margin.top + ")");
 
-    var lineGroup = _mapContentSVG.append("g").attr("class", "map-content-grid")
+    var lineGroup = ctrl.append("g").attr("class", "map-content-grid")
 
     $("#bottom-scroll").css('margin-left', Common.rulerLeft.width + Common.mapContent.margin.left - 1);
     $("#scroll-content").css('width', widthCal + Common.mapContent.margin.left + Common.mapContent.margin.right)
@@ -545,8 +550,10 @@ var MapCanvas = (function () {
           .attr("y2", yPost)
           .attr("stroke", "black");
 
-        if (j % _hoursOfPart != 0)
+        if (j % _hoursOfPart != 0) {
+          line.attr("class", 'grid-detail ' + (_showGridDetail ? '' : 'hide'));
           line.style("stroke-dasharray", ("1, 1"));
+        }
         else
           line.attr("class", 'start-hours');
 
@@ -556,7 +563,7 @@ var MapCanvas = (function () {
 
     var vesselLength = _vesselData.length;
     for (var i = 0; i < vesselLength; i++) {
-      _createVessel(_vesselData[i], _mapContentSVG);
+      _createVessel(_vesselData[i], ctrl);
     }
   }
 
@@ -888,6 +895,7 @@ var MapCanvas = (function () {
         var target = d3.select(this);
         var vslIdx = target.attr('vsl-group-idx');
         target.classed("active", true);
+        target.style('cursor', 'move');
         _vesselMouseover(vslIdx);
         _isFlag = true;
       })
@@ -895,6 +903,7 @@ var MapCanvas = (function () {
         var target = d3.select(this);
         var vslIdx = target.attr('vsl-group-idx');
         target.classed("active", false);
+        target.style('cursor', 'default');
         _vesselMouseout(vslIdx);
         _isFlag = false;
       })
@@ -911,6 +920,28 @@ var MapCanvas = (function () {
       .attr("width", mooringWidth)
       .attr("height", vslHeight - 1)
       .datum({x: mooringLeft, y: vslTop})
+    rectGroup.append("line")
+      .attr("mooring-line-left-idx", vslData.id)
+      .attr("class", "ruler-line")
+      .attr("ruler-line", vslData.id)
+      .attr("stroke-width", '1px')
+      .attr("x1", mooringLeft)
+      .attr("y1", 0)
+      .attr("x2", mooringLeft)
+      .attr("y2", vslTop)
+      .attr("stroke", "black")
+      .style("stroke-dasharray", ("4, 1"));
+    rectGroup.append("line")
+      .attr("mooring-line-right-idx", vslData.id)
+      .attr("class", "ruler-line")
+      .attr("ruler-line", vslData.id)
+      .attr("stroke-width", '1px')
+      .attr("x1", mooringLeft + mooringWidth + 1)
+      .attr("y1", 0)
+      .attr("x2", mooringLeft + mooringWidth + 1)
+      .attr("y2", vslTop)
+      .attr("stroke", "black")
+      .style("stroke-dasharray", ("4, 1"));
 
     //Mooring bitt
     rectGroup.append("text")
@@ -935,10 +966,12 @@ var MapCanvas = (function () {
       .text(mooringTextRight)
 
     //draw vessel
+    var vslColor = vslData[_vslColorType].length > 0 ? vslData[_vslColorType] : 'none';
     rectGroup.append("rect")
       .attr("class", "vessel-rect")
+      .attr("vsl-status", vslData.status)
       .attr("vsl-idx", vslData.id)
-      .attr("fill", vslData.vessel_color)
+      .attr("fill", vslColor)
       .attr("stroke", "red")
       .attr("stroke-width", '2px')
       .attr("x", vslLeft)
@@ -947,6 +980,50 @@ var MapCanvas = (function () {
       .attr("height", vslHeight - 1)
       .datum({x: vslLeft, y: vslTop})
       .on("click", _vesselClicked);
+    rectGroup.append("line")
+      .attr("vessel-line-left-idx", vslData.id)
+      .attr("class", "ruler-line")
+      .attr("ruler-line", vslData.id)
+      .attr("stroke-width", '1px')
+      .attr("x1", vslLeft)
+      .attr("y1", 0)
+      .attr("x2", vslLeft)
+      .attr("y2", vslTop)
+      .attr("stroke", "black")
+      .style("stroke-dasharray", ("4, 1"));
+    rectGroup.append("line")
+      .attr("vessel-line-right-idx", vslData.id)
+      .attr("class", "ruler-line")
+      .attr("ruler-line", vslData.id)
+      .attr("stroke-width", '1px')
+      .attr("x1", vslLeft + vslWidth + 1)
+      .attr("y1", 0)
+      .attr("x2", vslLeft + vslWidth + 1)
+      .attr("y2", vslTop)
+      .attr("stroke", "black")
+      .style("stroke-dasharray", ("4, 1"));
+
+    var fullWidth = _zoomInWidth(_mapWidth) + Common.mapContent.margin.left; //Plus if have ruler right + Common.mapContent.margin.right;
+    _mapContentSVG.append("line")
+      .attr("vessel-line-top-idx", vslData.id)
+      .attr("class", "ruler-line")
+      .attr("stroke-width", '1px')
+      .attr("x1", 0)
+      .attr("y1", vslTop)
+      .attr("x2", fullWidth)
+      .attr("y2", vslTop)
+      .attr("stroke", "black")
+      .style("stroke-dasharray", ("4, 1"));
+    _mapContentSVG.append("line")
+      .attr("vessel-line-bottom-idx", vslData.id)
+      .attr("class", "ruler-line")
+      .attr("stroke-width", '1px')
+      .attr("x1", 0)
+      .attr("y1", vslBottom)
+      .attr("x2", fullWidth)
+      .attr("y2", vslBottom)
+      .attr("stroke", "black")
+      .style("stroke-dasharray", ("4, 1"));
 
     rectGroup.append("rect")
       .attr("class", "resize-control")
@@ -955,7 +1032,7 @@ var MapCanvas = (function () {
       .attr("stroke", "#00b3ff")
       .attr("fill-opacity", 1)
       .attr("x", vslLeft + vslWidth / 2 - _dragbarW / 2)
-      .attr("y", vslTop - 5)
+      .attr("y", vslTop)
       .attr("width", _dragbarW)
       .attr("height", _dragbarH)
       .attr("cursor", "pointer")
@@ -967,7 +1044,6 @@ var MapCanvas = (function () {
       .call(d3.drag()
         .on("drag", _resizeTop)
         .on("end", _vesselResized));
-
     rectGroup.append("rect")
       .attr("class", "resize-control")
       .attr("resize-bottom-idx", vslData.id)
@@ -975,7 +1051,7 @@ var MapCanvas = (function () {
       .attr("stroke", "#00b3ff")
       .attr("fill-opacity", 1)
       .attr("x", vslLeft + vslWidth / 2 - _dragbarW / 2)
-      .attr("y", vslBottom - 5)
+      .attr("y", vslBottom - _dragbarH)
       .attr("width", _dragbarW)
       .attr("height", _dragbarH)
       .attr("cursor", "pointer")
@@ -1076,6 +1152,7 @@ var MapCanvas = (function () {
     //Bridge
     var bridgeGroup = rectGroup.append("g")
     bridgeGroup.append("line")
+      .attr("class", "bridge " + (_showBridge ? '' : 'hide'))
       .attr("vsl-bridge-idx", vslData.id)
       .attr("stroke-width", '2px')
       .attr("stroke", 'red')
@@ -1084,6 +1161,18 @@ var MapCanvas = (function () {
       .attr("x2", vslbridge)
       .attr("y2", vslBottom)
       .style("stroke-dasharray", ("8, 4"));
+    bridgeGroup.append("line")
+      .attr("bridge-line-idx", vslData.id)
+      .attr("class", "ruler-line bridge " + (_showBridge ? '' : 'hide'))
+      .attr("ruler-line", vslData.id)
+      .attr("stroke-width", '2px')
+      .attr("x1", vslbridge)
+      .attr("y1", 0)
+      .attr("x2", vslbridge)
+      .attr("y2", vslTop)
+      .attr("stroke", 'red')
+      .style("stroke-dasharray", ("8, 4"));
+
     if (bridgeObj) {
       bridgeGroup.append("text")
         .style("fill", "#000")
@@ -1100,6 +1189,7 @@ var MapCanvas = (function () {
     //Stern Ramp
     if (isSternRampDraw) {
       rectGroup.append("line")
+        .attr("class", "ramp " + (_showRamp ? '' : 'hide'))
         .attr("stern-ramp-idx", vslData.id)
         .attr("stroke-width", '6px')
         .attr("stroke", 'red')
@@ -1107,11 +1197,45 @@ var MapCanvas = (function () {
         .attr("y1", vslBottom - 3)
         .attr("x2", sternRampLeft + sternRampWidth)
         .attr("y2", vslBottom - 3);
+      _rulerTopSVG.append("line")
+        .attr("class", "ruler-line ramp " + (_showRamp ? '' : 'hide'))
+        .attr("stern-ramp-ruler-idx", vslData.id)
+        .attr("stroke-width", '4px')
+        .attr("stroke", 'red')
+        .attr("originX1", sternRampLeft)
+        .attr("originX2", sternRampLeft + sternRampWidth)
+        .attr("x1", sternRampLeft)
+        .attr("y1",  _zoomInHeight(Common.rulerTop.height) - 1)
+        .attr("x2", sternRampLeft + sternRampWidth)
+        .attr("y2",  _zoomInHeight(Common.rulerTop.height) - 1);
+      rectGroup.append("line")
+        .attr("stern-ramp-line-idx", vslData.id)
+        .attr("class", "ruler-line ramp " + (_showRamp ? '' : 'hide'))
+        .attr("ruler-line", vslData.id)
+        .attr("stroke-width", '1px')
+        .attr("x1", sternRampLeft + 1)
+        .attr("y1", 0)
+        .attr("x2", sternRampLeft + 1)
+        .attr("y2", vslTop + vslHeight - 5)
+        .attr("stroke", "red")
+        .style("stroke-dasharray", ("4, 1"));
+      rectGroup.append("line")
+        .attr("stern-ramp-line-idx", vslData.id)
+        .attr("class", "ruler-line ramp " + (_showRamp ? '' : 'hide'))
+        .attr("ruler-line", vslData.id)
+        .attr("stroke-width", '1px')
+        .attr("x1", sternRampLeft + sternRampWidth)
+        .attr("y1", 0)
+        .attr("x2", sternRampLeft + sternRampWidth)
+        .attr("y2", vslTop + vslHeight - 5)
+        .attr("stroke", "red")
+        .style("stroke-dasharray", ("4, 1"));
     }
 
     //Side Ramp
     if (isSideRampDraw) {
       rectGroup.append("line")
+        .attr("class", "ramp " + (_showRamp ? '' : 'hide'))
         .attr("side-ramp-idx", vslData.id)
         .attr("stroke-width", '6px')
         .attr("stroke", 'red')
@@ -1119,6 +1243,39 @@ var MapCanvas = (function () {
         .attr("y1", vslBottom - 3)
         .attr("x2", sideRampLeft + sideRampWidth)
         .attr("y2", vslBottom - 3);
+      _rulerTopSVG.append("line")
+        .attr("class", "ruler-line ramp " + (_showRamp ? '' : 'hide'))
+        .attr("side-ramp-ruler-idx", vslData.id)
+        .attr("stroke-width", '4px')
+        .attr("stroke", 'red')
+        .attr("originX1", sideRampLeft)
+        .attr("originX2", sideRampLeft + sideRampWidth)
+        .attr("x1", sideRampLeft)
+        .attr("y1",  _zoomInHeight(Common.rulerTop.height) - 1)
+        .attr("x2", sideRampLeft + sideRampWidth)
+        .attr("y2",  _zoomInHeight(Common.rulerTop.height) - 1);
+      rectGroup.append("line")
+        .attr("side-ramp-line-idx", vslData.id)
+        .attr("class", "ruler-line ramp " + (_showRamp ? '' : 'hide'))
+        .attr("ruler-line", vslData.id)
+        .attr("stroke-width", '1px')
+        .attr("x1", sideRampLeft + 1)
+        .attr("y1", 0)
+        .attr("x2", sideRampLeft + 1)
+        .attr("y2", vslTop + vslHeight - 5)
+        .attr("stroke", "red")
+        .style("stroke-dasharray", ("4, 1"));
+      rectGroup.append("line")
+        .attr("side-ramp-line-idx", vslData.id)
+        .attr("class", "ruler-line ramp " + (_showRamp ? '' : 'hide'))
+        .attr("ruler-line", vslData.id)
+        .attr("stroke-width", '1px')
+        .attr("x1", sideRampLeft + sideRampWidth)
+        .attr("y1", 0)
+        .attr("x2", sideRampLeft + sideRampWidth)
+        .attr("y2", vslTop + vslHeight - 5)
+        .attr("stroke", "red")
+        .style("stroke-dasharray", ("4, 1"));
     }
 
     // Head number
@@ -1145,21 +1302,39 @@ var MapCanvas = (function () {
       .attr('font-weight', 'bold')
       .text(textRight)
 
-    rectGroup.datum({x: 0, y: 0})
-      .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
-      .call(d3.drag()
-        .on("drag", _dragged)
-        .on("end", _dragended));
+    if(vslData.status == 'P'){
+      rectGroup.datum({x: 0, y: 0})
+        .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
+        .call(d3.drag()
+          .on("drag", _dragged)
+          .on("end", _dragended));
+    }
   }
 
-  function _vesselClicked(target){
+  function _vesselClicked(target) {
     _d3VslSelected = d3.select(this);
     d3.select(this).classed("active", true);
     var vslId = d3.select(this).attr("vsl-idx");
     var vslData = _getVesselById(vslId);
-    if(!vslData) return;
+    if (!vslData) return;
     _setBittColor(vslData.mooring_head);
     _setBittColor(vslData.mooring_stern);
+
+    _showVesselRuler(vslId);
+  }
+
+  function _showVesselRuler(vslId) {
+    _hideVesselRuler();
+    $("g.vessel-group[vsl-group-idx=" + vslId + "]").find('.ruler-line').addClass('active');
+    $("#ruler-top-content").find('line.ruler-line[stern-ramp-ruler-idx='+vslId+']').addClass('active');
+    $("#ruler-top-content").find('line.ruler-line[side-ramp-ruler-idx='+vslId+']').addClass('active');
+    $("line[vessel-line-top-idx="+ vslId +"]").addClass('active');
+    $("line[vessel-line-bottom-idx="+ vslId +"]").addClass('active');
+  }
+
+  function _hideVesselRuler(){
+    $("#map-content-svg").find('.ruler-line').removeClass('active');
+    $("#ruler-top-content").find('line.ruler-line').removeClass('active');
   }
 
   function _setBittColor(id) {
@@ -1200,6 +1375,8 @@ var MapCanvas = (function () {
     var vslRight = vslLeft + vslInfo.vslWidth;
     var vslBridge = vslInfo.vslBridge + x;
     var vslHead = vslInfo.vslHead + x;
+    var vslTop = vslInfo.vslTop + y;
+    var vslBottom = vslTop + vslInfo.vslHeight;
 
     var mooringDistance = _zoomInWidth(_mooringDistance);
     var left = vslLeft - mooringDistance;
@@ -1233,6 +1410,14 @@ var MapCanvas = (function () {
       if (mooringTarget) {
         mooringTarget.attr('x', morringLeft);
         mooringTarget.attr('width', mooringWidth);
+
+        //Mooring line left
+        d3.select("line[mooring-line-left-idx=" + vslIdx + "]")
+          .attr("x1", morringLeft)
+          .attr("x2", morringLeft);
+        d3.select("line[mooring-line-right-idx=" + vslIdx + "]")
+          .attr("x1", morringRight + 1)
+          .attr("x2", morringRight + 1);
       }
 
       var bittLeftText = $("text[mooring-text-left=" + vslIdx + "]");
@@ -1258,6 +1443,31 @@ var MapCanvas = (function () {
       if (bridgeObj && textRight)
         bridgeText.text(bridgeObj.text);
     }
+
+    //vessel line
+    d3.select("line[vessel-line-top-idx=" + vslIdx + "]")
+      .attr("y1", vslTop)
+      .attr("y2", vslTop);
+    d3.select("line[vessel-line-bottom-idx=" + vslIdx + "]")
+      .attr("y1", vslBottom)
+      .attr("y2", vslBottom);
+
+    var x1, x2;
+    //Stern Ramp
+    x1 = d3.select("line[stern-ramp-ruler-idx=" + vslIdx + "]").attr('originX1');
+    x2 = d3.select("line[stern-ramp-ruler-idx=" + vslIdx + "]").attr('originX2');
+    d3.select("line[stern-ramp-ruler-idx=" + vslIdx + "]")
+      .attr("x1", parseFloat(x1) + x)
+      .attr("x2", parseFloat(x2) + x);
+    //Side Ramp
+    x1 = d3.select("line[side-ramp-ruler-idx=" + vslIdx + "]").attr('originX1');
+    x2 = d3.select("line[side-ramp-ruler-idx=" + vslIdx + "]").attr('originX2');
+    d3.select("line[side-ramp-ruler-idx=" + vslIdx + "]")
+      .attr("x1", parseFloat(x1) + x)
+      .attr("x2", parseFloat(x2) + x);
+
+    $("line[ruler-line=" + vslIdx + "]")
+      .attr('y1', -y);
 
     var startDate = _getVesselDateFromPos(vslInfo.vslTop + y);
     var endDate = _getVesselDateFromPos(vslInfo.vslBottom + y);
@@ -1539,7 +1749,8 @@ var MapCanvas = (function () {
         mooringTarget.attr('width', width);
       }
       target.attr("transform", "translate(" + _dx + "," + _dy + ")");
-      if (isUpDown || isLeftRight) _reCalcVesselInfo(target, _dx, _dy);
+      _reCalcVesselInfo(target, _dx, _dy);
+      // if (isUpDown || isLeftRight) _reCalcVesselInfo(target, _dx, _dy);
     }
   }
 
@@ -1553,6 +1764,8 @@ var MapCanvas = (function () {
 
   function _moveUpDown(type) {
     if (!_d3VslSelected) return;
+    if(_d3VslSelected.attr('vsl-status') != 'P') return;
+
     var vslIdx = _d3VslSelected.attr('vsl-idx');
     var target = d3.select(".vessel-group[vsl-group-idx=" + vslIdx + "]");
     var translate = _getTranslateVal(target.attr('transform'));
@@ -1567,6 +1780,8 @@ var MapCanvas = (function () {
 
   function _moveLeftRight(type) {
     if (!_d3VslSelected) return;
+    if(_d3VslSelected.attr('vsl-status') != 'P') return;
+
     var mooringDistance = _zoomInWidth(_mooringDistance);
     var vslIdx = _d3VslSelected.attr('vsl-idx');
     var target = d3.select(".vessel-group[vsl-group-idx=" + vslIdx + "]");
@@ -1595,7 +1810,7 @@ var MapCanvas = (function () {
     var vslBottom = d.y = Math.max(vslInfo.vslTop, Math.min(_zoomInHeight(_mapHeight), gridY));
     _heightTMP = vslBottom - vslInfo.vslTop;
     d3.select(this).attr("y", function (d) {
-      return vslBottom - (_dragbarW / 2)
+      return vslBottom - _dragbarH;
     });
 
     //Vessel
@@ -1641,6 +1856,12 @@ var MapCanvas = (function () {
       .attr("y1", vslBottom - 3)
       .attr("y2", vslBottom - 3);
 
+    d3.select("line[vessel-line-bottom-idx=" + vslId + "]")
+      .attr('y1', vslBottom)
+      .attr('y2', vslBottom);
+
+    $("line.ramp[ruler-line=" + vslId + "]").attr('y2', vslBottom);
+
     _vslDrawInfo.id = vslId;
     _vslDrawInfo.vslTop = vslBottom - _heightTMP;
     _vslDrawInfo.vslHeight = _heightTMP;
@@ -1659,11 +1880,11 @@ var MapCanvas = (function () {
     var oldy = d.y;
     var gridHeight = _timeChange == 30 ? (_zoomInHeight(Common.gridHeight) / 2) : _zoomInHeight(Common.gridHeight);
     var gridY = Math.round(d3.event.y / gridHeight) * gridHeight;
-    var vslTop = d.y = Math.max(0, Math.min(d.y + _heightTMP - (_dragbarW / 2), gridY));
+    var vslTop = d.y = Math.max(0, Math.min(d.y + _heightTMP, gridY));
     _heightTMP = _heightTMP + (oldy - d.y);
     //Update pos Resize Ctrl
     d3.select(this).attr("y", function (d) {
-      return d.y - _dragbarW / 2;
+      return d.y;
     });
 
     //Vessel
@@ -1707,6 +1928,12 @@ var MapCanvas = (function () {
       .attr("y", vslTop + 12)
     d3.select("text[mooring-text-right=" + vslId + "]")
       .attr("y", vslTop + 12)
+
+    d3.select("line[vessel-line-top-idx=" + vslId + "]")
+      .attr('y1', vslTop)
+      .attr('y2', vslTop);
+
+    $("line[ruler-line=" + vslId + "]:not(.ramp)").attr('y2', vslTop);
 
     _vslDrawInfo.id = vslId;
     _vslDrawInfo.vslTop = vslTop;
@@ -1786,6 +2013,7 @@ var MapCanvas = (function () {
         _d3VslSelected.classed("active", false);
         _d3VslSelected = null;
         _removeBittSelected();
+        _hideVesselRuler();
       }
     });
 
@@ -1796,6 +2024,7 @@ var MapCanvas = (function () {
             _d3VslSelected.classed("active", false);
             _d3VslSelected = null;
             _removeBittSelected();
+            _hideVesselRuler();
           }
           break;
         case _keyCode.down:
@@ -1838,11 +2067,46 @@ var MapCanvas = (function () {
     return _vesselData;
   }
 
+  function _displayGridDetail(isVisible) {
+    _displayLine('grid-detail', isVisible);
+    _showGridDetail = isVisible;
+  }
+
+  function _displayBridge(isVisible) {
+    _displayLine('bridge', isVisible);
+    _showBridge = isVisible;
+  }
+
+  function _displayRamp(isVisible) {
+    _displayLine('ramp', isVisible);
+    _showRamp = isVisible;
+  }
+
+  function _displayLine(classNm, isVisible) {
+    if (isVisible)
+      $("line." + classNm + "").removeClass('hide');
+    else
+      $("line." + classNm + "").addClass('hide');
+  }
+
+  function _changeVesselColor(type) {
+    _vslColorType = type;
+    for (var i = 0; i < _vesselData.length; i++) {
+      var vslId = _vesselData[i].id;
+      var color = _vesselData[i][type].length > 0 ? _vesselData[i][type] : 'none';
+      var target = $("rect[vsl-idx=" + vslId + "]").attr("fill", color);
+    }
+  }
+
   return {
     draw: _draw,
     setMooringDistance: _setMooringDistance,
     setMovementDistance: _setMovementDistance,
     setTimeChange: _setTimeChange,
-    getVesselData: _getVesselData
+    getVesselData: _getVesselData,
+    displayGridDetail: _displayGridDetail,
+    displayBridge: _displayBridge,
+    displayRamp: _displayRamp,
+    changeVesselColor: _changeVesselColor
   }
 }());
