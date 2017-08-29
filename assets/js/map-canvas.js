@@ -6,9 +6,11 @@ var MapCanvas = (function () {
   var _rulerLeftSVG;
   var _mapContentSVG;
   var _rulerTopSVG;
+  var _vslGroupContent;
+
   var _isRulerLeft = false, _isMapContent = true
-  var _zoomHeightRate = 1, _zoomHeightMin = 1, _zoomHeightMax = 4, _zoomHeightStep = 1;
-  var _zoomWidthRate = 2, _zoomWidthMin = 1, _zoomWidthMax = 4, _zoomWidthStep = 1;
+  var _zoomHeightRate = 1, _zoomHeightMin = 1, _zoomHeightMax = 5, _zoomHeightStep = 1;
+  var _zoomWidthRate = 3, _zoomWidthMin = 1, _zoomWidthMax = 5, _zoomWidthStep = 1;
   var _rulerDateData = [];
   var _fontFamily = '맑은고딕,Malgun Gothic,Arial, Verdana, Geneva, Helvetica, sans-serif, Apple-Gothic,애플고딕,Droid Sans,돋움,Dotum';
   var _mapWidth = 0, _mapHeight = 0;
@@ -16,242 +18,9 @@ var MapCanvas = (function () {
   var _partOfDay = 4; // One day divided into 4 parts
   var _hoursOfPart = 6;
   var _previousDate;
-  var _bitts = [{
-    "berth_idx": "2",
-    "start_position": 19,
-    "end_position": 69,
-    "id": 13,
-    "idx": 13,
-    "name": "14",
-    "start_position_original": 346,
-    "end_position_original": 365,
-    "id_temp": 13
-  }, {
-    "berth_idx": "2",
-    "start_position": 69,
-    "end_position": 94,
-    "id": 12,
-    "idx": 12,
-    "name": "13",
-    "start_position_original": 296,
-    "end_position_original": 346,
-    "id_temp": 12
-  }, {
-    "berth_idx": "2",
-    "start_position": 94,
-    "end_position": 119,
-    "id": 11,
-    "idx": 11,
-    "name": "12",
-    "start_position_original": 271,
-    "end_position_original": 296,
-    "id_temp": 11
-  }, {
-    "berth_idx": "2",
-    "start_position": 119,
-    "end_position": 144,
-    "id": 10,
-    "idx": 10,
-    "name": "11",
-    "start_position_original": 246,
-    "end_position_original": 271,
-    "id_temp": 10
-  }, {
-    "berth_idx": "2",
-    "start_position": 144,
-    "end_position": 169,
-    "id": 9,
-    "idx": 9,
-    "name": "10",
-    "start_position_original": 221,
-    "end_position_original": 246,
-    "id_temp": 9
-  }, {
-    "berth_idx": "2",
-    "start_position": 169,
-    "end_position": 194,
-    "id": 8,
-    "idx": 8,
-    "name": "09",
-    "start_position_original": 196,
-    "end_position_original": 221,
-    "id_temp": 8
-  }, {
-    "berth_idx": "2",
-    "start_position": 194,
-    "end_position": 219,
-    "id": 7,
-    "idx": 7,
-    "name": "08",
-    "start_position_original": 171,
-    "end_position_original": 196,
-    "id_temp": 7
-  }, {
-    "berth_idx": "2",
-    "start_position": 219,
-    "end_position": 244,
-    "id": 6,
-    "idx": 6,
-    "name": "07",
-    "start_position_original": 146,
-    "end_position_original": 171,
-    "id_temp": 6
-  }, {
-    "berth_idx": "2",
-    "start_position": 244,
-    "end_position": 269,
-    "id": 5,
-    "idx": 5,
-    "name": "06",
-    "start_position_original": 121,
-    "end_position_original": 146,
-    "id_temp": 5
-  }, {
-    "berth_idx": "2",
-    "start_position": 269,
-    "end_position": 294,
-    "id": 4,
-    "idx": 4,
-    "name": "05",
-    "start_position_original": 96,
-    "end_position_original": 121,
-    "id_temp": 4
-  }, {
-    "berth_idx": "2",
-    "start_position": 294,
-    "end_position": 319,
-    "id": 3,
-    "idx": 3,
-    "name": "04",
-    "start_position_original": 71,
-    "end_position_original": 96,
-    "id_temp": 3
-  }, {
-    "berth_idx": "2",
-    "start_position": 319,
-    "end_position": 344,
-    "id": 2,
-    "idx": 2,
-    "name": "03",
-    "start_position_original": 46,
-    "end_position_original": 71,
-    "id_temp": 2
-  }, {
-    "berth_idx": "2",
-    "start_position": 344,
-    "end_position": 363.55,
-    "id": 1,
-    "idx": 1,
-    "name": "02",
-    "start_position_original": 21,
-    "end_position_original": 46,
-    "id_temp": 1
-  }, {
-    "berth_idx": "2",
-    "start_position": 363.55,
-    "end_position": 363.55,
-    "id": 0,
-    "idx": 0,
-    "name": "01",
-    "start_position_original": 1.45,
-    "end_position_original": 21,
-    "id_temp": 0
-  }]
-  var _berthData = {
-    '0042RL': [{
-      'berth_name': 'A1',
-      'direction': '0042RL',
-      'group': 'G1',
-      'id_berth': 2,
-      'berth_width': 365,
-      'berth_start_position': 0,
-      'berth_end_position': 365
-    },
-      // {
-      //   'berth_name': 'A2',
-      //   'direction' : '0042RL',
-      //   'group': 'G1',
-      //   'id_berth': 3,
-      //   'berth_width': 365,
-      //   'berth_start_position': 365,
-      //   'berth_end_position': 730
-      // }
-    ],
-    'berth_total_width': 365
-  };
-  var _vesselData = [{
-    "id": "ADR00100012017",
-    "berth_id": "2",
-    "code": "ADR001/0001/2017",
-    "vsl_voy_no": "ADR001/0001/2017",
-    "name": "ADRIATIC HIGHWAY",
-    "LOA": 150,
-    "LBP": 0,
-    "bridge_to_stern": 50,
-    "vessel_color": "#2957e3",
-    "calling_status_color": "#2957e3",
-    "calling_type_color": "",
-    "service_lane_color": "",
-    "along_side": "0123S",
-    "along_side_name": "S",
-    "head_position": 30,
-    "berth_dir_cd": "0042RL",
-    "status": "P",
-    "status_code": "0103P",
-    "eta_date": "31/05/2017 10:00",
-    "etb_date": "01/05/2017 20:52",
-    "etd_date": "31/05/2017 20:00",
-    "ata_date": "",
-    "atb_date": "",
-    "atd_date": "",
-    "stern_ramp": {"ramp_width": 8, "ramp_start_position": 2, "ramp_degree": 150, "ramp_occupied_distance": 16},
-    "side_ramp": {"ramp_width": 5, "ramp_start_position": 30, "ramp_degree": 90, "ramp_occupied_distance": 5},
-    "operator_cd": "ECL",
-    "mooring_head": "1",
-    "mooring_stern": "8",
-    "volume_d": "0",
-    "volume_l": "0",
-    "volume_r": "0",
-    "data_error": false,
-    "vsl_tp_nm": "ROLL-ON/ROLL-OFF",
-    "vsl_opr_nm": "SIAM ECL CO., LTD."
-  }, {
-    "id": "MON00200012017",
-    "berth_id": "2",
-    "code": "MON002/0001/2017",
-    "vsl_voy_no": "MON002/0001/2017",
-    "name": "MONZA EXPRESS",
-    "LOA": 200,
-    "LBP": 0,
-    "bridge_to_stern": 150,
-    "vessel_color": "#2957e3",
-    "calling_status_color": "#2957e3",
-    "calling_type_color": "",
-    "service_lane_color": "",
-    "along_side": "0123P",
-    "along_side_name": "P",
-    "head_position": 300,
-    "berth_dir_cd": "0042RL",
-    "status": "P",
-    "status_code": "0103P",
-    "eta_date": "05/06/2017 10:00",
-    "etb_date": "05/06/2017 08:00",
-    "etd_date": "08/06/2017 14:00",
-    "ata_date": "",
-    "atb_date": "",
-    "atd_date": "",
-    "stern_ramp": {"ramp_width": 8, "ramp_start_position": 2, "ramp_degree": 150, "ramp_occupied_distance": 16},
-    "side_ramp": {"ramp_width": 5, "ramp_start_position": 30, "ramp_degree": 90, "ramp_occupied_distance": 5},
-    "operator_cd": "NYK",
-    "mooring_head": "13",
-    "mooring_stern": "3",
-    "volume_d": "0",
-    "volume_l": "0",
-    "volume_r": "0",
-    "data_error": false,
-    "vsl_tp_nm": "ROLL-ON/ROLL-OFF",
-    "vsl_opr_nm": "NYK LINE (THAILAND) CO.,LTD."
-  }]
+  var _bitts = [];
+  var _berthData = {};
+  var _vesselData = [];
   var _dx, _dy;
   var _timeChange = 30; // 30 | 60 <=> 30' or 1h for one step when move vessel direction top - bottom
   var _movementDistance = 5;
@@ -286,14 +55,51 @@ var MapCanvas = (function () {
     esc: 27,
     del: 46
   }
+
   var _showBridge = true, _showRamp = true, _showGridDetail = true;
   var _vslColorType = 'calling_status_color'; //calling_status_color, calling_type_color, service_lane_color
+  /*
+   * .addClassSVG(className)
+   * Adds the specified class(es) to each of the set of matched SVG elements.
+   */
+  $.fn.addClassSVG = function(className){
+    $(this).attr('class', function(index, existingClassNames) {
+      return ((existingClassNames !== undefined) ? (existingClassNames + ' ') : '') + className;
+    });
+    return this;
+  };
 
-  function _draw() {
-    var strDate = '2017-05-31', number = 5;
+  /*
+   * .removeClassSVG(className)
+   * Removes the specified class to each of the set of matched SVG elements.
+   */
+  $.fn.removeClassSVG = function(className){
+    $(this).attr('class', function(index, existingClassNames) {
+      var re = new RegExp('\\b' + className + '\\b', 'g');
+      return existingClassNames.replace(re, '');
+    });
+    return this;
+  };
+
+  function _draw(strDate, number, berthData, bitts, vesselData, config) {
+    $("#ruler-top-svg").remove();
+    $("#map-content-svg").remove();
+    $("#ruler-left-svg").remove();
 
     _previousDate = moment(strDate, Common.format);
     _rulerDateData = Common.createDateData(strDate, Common.format, number);
+    if(berthData) _berthData = berthData;
+    if(bitts) _bitts = bitts;
+    if(vesselData) _vesselData = vesselData;
+    if(config) {
+      _vslColorType = config.vslColor;
+      _timeChange = config.timechange;
+      _showRamp = config.displayRamp;
+      _showBridge = config.displayBridge;
+      _showGridDetail = config.displayGridDetail;
+      _mooringDistance = config.mooringDistance;
+      _movementDistance = config.movementDistance;
+    }
 
     _mapWidth = _berthData.berth_total_width;
     _mapHeight = (number + 1) * _hoursOfDay * Common.gridHeight;
@@ -500,11 +306,11 @@ var MapCanvas = (function () {
       .append("g")
       .attr("transform", "translate(0,0)");
 
-  var ctrl = _mapContentSVG.append("g")
+    _vslGroupContent = _mapContentSVG.append("g")
       .attr("transform",
         "translate(" + Common.mapContent.margin.left + "," + Common.mapContent.margin.top + ")");
 
-    var lineGroup = ctrl.append("g").attr("class", "map-content-grid")
+    var lineGroup = _vslGroupContent.append("g").attr("class", "map-content-grid")
 
     $("#bottom-scroll").css('margin-left', Common.rulerLeft.width + Common.mapContent.margin.left - 1);
     $("#scroll-content").css('width', widthCal + Common.mapContent.margin.left + Common.mapContent.margin.right)
@@ -563,7 +369,7 @@ var MapCanvas = (function () {
 
     var vesselLength = _vesselData.length;
     for (var i = 0; i < vesselLength; i++) {
-      _createVessel(_vesselData[i], ctrl);
+      _createVessel(_vesselData[i]);
     }
   }
 
@@ -593,8 +399,8 @@ var MapCanvas = (function () {
     if (berthArr) {
       arrLength = berthArr.length;
       for (var i = 0; i < arrLength; i++) {
-        var xPos = _zoomInWidth(Common.getPosByBerthDir(berthArr[i].berth_start_position, width, berthDir));
-        var widthBerth = _zoomInWidth(berthArr[i].berth_width);
+        var xPos = _zoomInWidth(Common.getPosByBerthDir(berthArr[i].start_postion, width, berthDir));
+        var widthBerth = _zoomInWidth(berthArr[i].length);
         var rectHeight = 20;
         var xPosText = xPos + widthBerth / 2;
 
@@ -648,7 +454,7 @@ var MapCanvas = (function () {
           .attr("text-anchor", "middle")
           .attr('font-family', _fontFamily)
           .attr('font-size', '14px')
-          .text(berthArr[i].berth_name);
+          .text(berthArr[i].name);
       }
     }
 
@@ -750,7 +556,7 @@ var MapCanvas = (function () {
     }
   }
 
-  function _createVessel(vslData, control) {
+  function _createVessel(vslData) {
     var vslWidth = 0, vslHeight = 0;
     var vslLeft = 0, vslRight = 0, vslTop = 0, vslBottom, vslHead = 0, vslStern = 0, vslbridge = 0, mooringWidth = 0, mooringLeft = 0, mooringRight = 0;
     var sternRampWidth, sternRampStart, sternRampLeft, isSternRampDraw = false;
@@ -773,7 +579,7 @@ var MapCanvas = (function () {
     vslStern = _zoomInWidth(Common.getPosByBerthDir(stern, _mapWidth, vslData.berth_dir_cd));
     vslbridge = _zoomInWidth(Common.getPosByBerthDir(bridge, _mapWidth, vslData.berth_dir_cd));
 
-    console.log("vslHeight: ", vslHeight);
+    // console.log("vslHeight: ", vslHeight);
 
     if (vslData.stern_ramp) {
       sternRampWidth = _zoomInWidth(vslData.stern_ramp.ramp_width);
@@ -787,7 +593,7 @@ var MapCanvas = (function () {
       isSideRampDraw = true;
     }
 
-    var rectGroup = control.append("g")
+    var rectGroup = _vslGroupContent.append("g")
       .attr("class", "vessel-group")
       .attr("vsl-group-idx", vslData.id);
 
@@ -1288,7 +1094,7 @@ var MapCanvas = (function () {
       .attr('font-family', _fontFamily)
       .attr('font-size', '12px')
       .attr('font-weight', 'bold')
-      .text(textLeft)
+      .text(Common.roundNumber(textLeft))
 
     //Stern number
     rectGroup.append("text")
@@ -1300,7 +1106,7 @@ var MapCanvas = (function () {
       .attr('font-family', _fontFamily)
       .attr('font-size', '12px')
       .attr('font-weight', 'bold')
-      .text(textRight)
+      .text(Common.roundNumber(textRight))
 
     if(vslData.status == 'P'){
       rectGroup.datum({x: 0, y: 0})
@@ -1325,16 +1131,16 @@ var MapCanvas = (function () {
 
   function _showVesselRuler(vslId) {
     _hideVesselRuler();
-    $("g.vessel-group[vsl-group-idx=" + vslId + "]").find('.ruler-line').addClass('active');
-    $("#ruler-top-content").find('line.ruler-line[stern-ramp-ruler-idx='+vslId+']').addClass('active');
-    $("#ruler-top-content").find('line.ruler-line[side-ramp-ruler-idx='+vslId+']').addClass('active');
-    $("line[vessel-line-top-idx="+ vslId +"]").addClass('active');
-    $("line[vessel-line-bottom-idx="+ vslId +"]").addClass('active');
+    $("g.vessel-group[vsl-group-idx=" + vslId + "]").find('.ruler-line').addClassSVG('active');
+    $("#ruler-top-content").find('line.ruler-line[stern-ramp-ruler-idx='+vslId+']').addClassSVG('active');
+    $("#ruler-top-content").find('line.ruler-line[side-ramp-ruler-idx='+vslId+']').addClassSVG('active');
+    $("line[vessel-line-top-idx="+ vslId +"]").addClassSVG('active');
+    $("line[vessel-line-bottom-idx="+ vslId +"]").addClassSVG('active');
   }
 
   function _hideVesselRuler(){
-    $("#map-content-svg").find('.ruler-line').removeClass('active');
-    $("#ruler-top-content").find('line.ruler-line').removeClass('active');
+    $("#map-content-svg").find('.ruler-line').removeClassSVG('active');
+    $("#ruler-top-content").find('line.ruler-line').removeClassSVG('active');
   }
 
   function _setBittColor(id) {
@@ -1412,12 +1218,17 @@ var MapCanvas = (function () {
         mooringTarget.attr('width', mooringWidth);
 
         //Mooring line left
-        d3.select("line[mooring-line-left-idx=" + vslIdx + "]")
-          .attr("x1", morringLeft)
-          .attr("x2", morringLeft);
-        d3.select("line[mooring-line-right-idx=" + vslIdx + "]")
-          .attr("x1", morringRight + 1)
-          .attr("x2", morringRight + 1);
+        if (!d3.select("line[mooring-line-left-idx=" + vslIdx + "]").empty()) {
+          d3.select("line[mooring-line-left-idx=" + vslIdx + "]")
+            .attr("x1", morringLeft)
+            .attr("x2", morringLeft);
+        }
+
+        if (!d3.select("line[mooring-line-right-idx=" + vslIdx + "]").empty()) {
+          d3.select("line[mooring-line-right-idx=" + vslIdx + "]")
+            .attr("x1", morringRight + 1)
+            .attr("x2", morringRight + 1);
+        }
       }
 
       var bittLeftText = $("text[mooring-text-left=" + vslIdx + "]");
@@ -1445,26 +1256,36 @@ var MapCanvas = (function () {
     }
 
     //vessel line
-    d3.select("line[vessel-line-top-idx=" + vslIdx + "]")
-      .attr("y1", vslTop)
-      .attr("y2", vslTop);
-    d3.select("line[vessel-line-bottom-idx=" + vslIdx + "]")
-      .attr("y1", vslBottom)
-      .attr("y2", vslBottom);
+    if(!d3.select("line[vessel-line-top-idx=" + vslIdx + "]").empty()){
+      d3.select("line[vessel-line-top-idx=" + vslIdx + "]")
+        .attr("y1", vslTop)
+        .attr("y2", vslTop);
+    }
+
+    if(!d3.select("line[vessel-line-bottom-idx=" + vslIdx + "]").empty()){
+      d3.select("line[vessel-line-bottom-idx=" + vslIdx + "]")
+        .attr("y1", vslBottom)
+        .attr("y2", vslBottom);
+    }
 
     var x1, x2;
     //Stern Ramp
-    x1 = d3.select("line[stern-ramp-ruler-idx=" + vslIdx + "]").attr('originX1');
-    x2 = d3.select("line[stern-ramp-ruler-idx=" + vslIdx + "]").attr('originX2');
-    d3.select("line[stern-ramp-ruler-idx=" + vslIdx + "]")
-      .attr("x1", parseFloat(x1) + x)
-      .attr("x2", parseFloat(x2) + x);
+    if(! d3.select("line[stern-ramp-ruler-idx=" + vslIdx + "]").empty()){
+      x1 = d3.select("line[stern-ramp-ruler-idx=" + vslIdx + "]").attr('originX1');
+      x2 = d3.select("line[stern-ramp-ruler-idx=" + vslIdx + "]").attr('originX2');
+      d3.select("line[stern-ramp-ruler-idx=" + vslIdx + "]")
+        .attr("x1", parseFloat(x1) + x)
+        .attr("x2", parseFloat(x2) + x);
+    }
+
     //Side Ramp
-    x1 = d3.select("line[side-ramp-ruler-idx=" + vslIdx + "]").attr('originX1');
-    x2 = d3.select("line[side-ramp-ruler-idx=" + vslIdx + "]").attr('originX2');
-    d3.select("line[side-ramp-ruler-idx=" + vslIdx + "]")
-      .attr("x1", parseFloat(x1) + x)
-      .attr("x2", parseFloat(x2) + x);
+    if(! d3.select("line[side-ramp-ruler-idx=" + vslIdx + "]").empty()){
+      x1 = d3.select("line[side-ramp-ruler-idx=" + vslIdx + "]").attr('originX1');
+      x2 = d3.select("line[side-ramp-ruler-idx=" + vslIdx + "]").attr('originX2');
+      d3.select("line[side-ramp-ruler-idx=" + vslIdx + "]")
+        .attr("x1", parseFloat(x1) + x)
+        .attr("x2", parseFloat(x2) + x);
+    }
 
     $("line[ruler-line=" + vslIdx + "]")
       .attr('y1', -y);
@@ -1590,7 +1411,7 @@ var MapCanvas = (function () {
       distance_ss_bottom = gridHeight / 2;
 
     //Vessel top
-    var vslTop = eta_number_days * (gridHeight * 4) + (eta_hh) * gridHeight + distance_ss_top;
+    var vslTop = eta_number_days * 6 * (gridHeight * 4) + (eta_hh) * gridHeight + distance_ss_top;
     //Vessel height
     var vessel_height = 0;
     if (etd_number_days <= 0)
@@ -1782,15 +1603,15 @@ var MapCanvas = (function () {
     if (!_d3VslSelected) return;
     if(_d3VslSelected.attr('vsl-status') != 'P') return;
 
-    var mooringDistance = _zoomInWidth(_mooringDistance);
+    var movementDistance = _zoomInWidth(_movementDistance);
     var vslIdx = _d3VslSelected.attr('vsl-idx');
     var target = d3.select(".vessel-group[vsl-group-idx=" + vslIdx + "]");
     var translate = _getTranslateVal(target.attr('transform'));
     var dx = translate.x, dy = translate.y;
     if (type == _keyCode.left)
-      dx -= mooringDistance;
+      dx -= movementDistance;
     else
-      dx += mooringDistance;
+      dx += movementDistance;
     _moveVessel(target, vslIdx, dx, dy, null, false, false, true);
   }
 
@@ -1814,51 +1635,71 @@ var MapCanvas = (function () {
     });
 
     //Vessel
-    d3.select("rect[vsl-idx=" + vslId + "]")
-      .attr("height", _heightTMP - 1);
+    if(!d3.select("rect[vsl-idx=" + vslId + "]").empty()){
+      d3.select("rect[vsl-idx=" + vslId + "]")
+        .attr("height", _heightTMP - 1);
+    }
 
     //Mooring box
-    d3.select("rect[mooring-idx=" + vslId + "]")
-      .attr("height", _heightTMP - 1);
+    if(!d3.select("rect[mooring-idx=" + vslId + "]").empty()){
+      d3.select("rect[mooring-idx=" + vslId + "]")
+        .attr("height", _heightTMP - 1);
+    }
 
     //Bridge
-    d3.select("line[vsl-bridge-idx=" + vslId + "]").attr("y2", vslBottom);
-    d3.select("text[bridge-text=" + vslId + "]").attr("y", vslBottom - 5);
+    if(!d3.select("line[vsl-bridge-idx=" + vslId + "]").empty()){
+      d3.select("line[vsl-bridge-idx=" + vslId + "]").attr("y2", vslBottom);
+    }
+    if(!d3.select("text[bridge-text=" + vslId + "]").empty()){
+      d3.select("text[bridge-text=" + vslId + "]").attr("y", vslBottom - 5);
+    }
 
     //Head
     var d3Head = d3.select("g[head-idx=" + vslId + "]");
-    if (d3Head) {
+    if (!d3Head.empty()) {
       var triangleTop = vslBottom - _heightTMP / 2 - 13;
       var trxOrigin = d3Head.attr('trxOrigin');
       d3Head.attr("transform", "translate(" + trxOrigin + "," + triangleTop + ")");
     }
 
     //Mooring text left, right
-    d3.select("text[text-left=" + vslId + "]")
-      .attr("y", vslBottom - 8)
-    d3.select("text[text-right=" + vslId + "]")
-      .attr("y", vslBottom - 8);
+    if(!d3.select("text[text-left=" + vslId + "]").empty()){
+      d3.select("text[text-left=" + vslId + "]")
+        .attr("y", vslBottom - 8)
+    }
+
+    if(!d3.select("text[text-right=" + vslId + "]").empty()){
+      d3.select("text[text-right=" + vslId + "]")
+        .attr("y", vslBottom - 8);
+    }
 
     //Vessel alongside
     var d3VslAlongside = d3.select("g[vsl-alongside=" + vslId + "]");
-    if (d3VslAlongside) {
+    if (!d3VslAlongside.empty()) {
       var alongsideTop = vslBottom - 22;
       var trxOrigin = d3VslAlongside.attr('trxOrigin');
       d3VslAlongside.attr("transform", "translate(" + trxOrigin + "," + alongsideTop + ")");
     }
 
     //Stern ramp
-    d3.select("line[stern-ramp-idx=" + vslId + "]")
-      .attr("y1", vslBottom - 3)
-      .attr("y2", vslBottom - 3);
-    //Side ramp
-    d3.select("line[side-ramp-idx=" + vslId + "]")
-      .attr("y1", vslBottom - 3)
-      .attr("y2", vslBottom - 3);
+    if(!d3.select("line[stern-ramp-idx=" + vslId + "]").empty()){
+      d3.select("line[stern-ramp-idx=" + vslId + "]")
+        .attr("y1", vslBottom - 3)
+        .attr("y2", vslBottom - 3);
+    }
 
-    d3.select("line[vessel-line-bottom-idx=" + vslId + "]")
-      .attr('y1', vslBottom)
-      .attr('y2', vslBottom);
+    //Side ramp
+    if(!d3.select("line[side-ramp-idx=" + vslId + "]").empty()){
+      d3.select("line[side-ramp-idx=" + vslId + "]")
+        .attr("y1", vslBottom - 3)
+        .attr("y2", vslBottom - 3);
+    }
+
+    if(!d3.select("line[vessel-line-bottom-idx=" + vslId + "]").empty()){
+      d3.select("line[vessel-line-bottom-idx=" + vslId + "]")
+        .attr('y1', vslBottom)
+        .attr('y2', vslBottom);
+    }
 
     $("line.ramp[ruler-line=" + vslId + "]").attr('y2', vslBottom);
 
@@ -1977,6 +1818,7 @@ var MapCanvas = (function () {
   }
 
   function _initEvent() {
+    $("#ruller-left").unbind('mouseenter');
     $("#ruller-left").mouseenter(function () {
       _isRulerLeft = true;
     })
@@ -1984,6 +1826,7 @@ var MapCanvas = (function () {
         _isRulerLeft = false;
       });
 
+    $("#map-content").unbind('mouseenter');
     $("#map-content").mouseenter(function () {
       _isMapContent = true;
     })
@@ -1991,6 +1834,7 @@ var MapCanvas = (function () {
         _isMapContent = false;
       });
 
+    $("a.zoom-width").unbind('click');
     $("a.zoom-width").click(function () {
       var name = $(this).attr('name');
       if (name == 'btn-zoom-in')
@@ -1999,6 +1843,7 @@ var MapCanvas = (function () {
         _applyZoomWidth('zoom-out');
     });
 
+    $("a.zoom-height").unbind('click');
     $("a.zoom-height").click(function () {
       var name = $(this).attr('name');
       if (name == 'btn-zoom-in')
@@ -2007,6 +1852,7 @@ var MapCanvas = (function () {
         _applyZoomHeight('zoom-out');
     });
 
+    $(document).unbind('click');
     $(document).on('click', '#map-content', function (e) {
       $("g.vessel-group").removeAttr('drag-stop');
       if (!_isFlag && _d3VslSelected) {
@@ -2017,6 +1863,7 @@ var MapCanvas = (function () {
       }
     });
 
+    $(document).unbind('keydown');
     $(document).keydown(function (e) {
       switch (e.keyCode) {
         case _keyCode.esc:
@@ -2043,24 +1890,24 @@ var MapCanvas = (function () {
 
   function _enableOrDisableZoom() {
     if (_zoomHeightRate == _zoomHeightMin)
-      $(".zoom-height[name='btn-zoom-out']").addClass('disable-link');
+      $(".zoom-height[name='btn-zoom-out']").addClassSVG('disable-link');
     else
-      $(".zoom-height[name='btn-zoom-out']").removeClass('disable-link');
+      $(".zoom-height[name='btn-zoom-out']").removeClassSVG('disable-link');
 
     if (_zoomHeightRate == _zoomHeightMax)
-      $(".zoom-height[name='btn-zoom-in']").addClass('disable-link');
+      $(".zoom-height[name='btn-zoom-in']").addClassSVG('disable-link');
     else
-      $(".zoom-height[name='btn-zoom-in']").removeClass('disable-link');
+      $(".zoom-height[name='btn-zoom-in']").removeClassSVG('disable-link');
 
     if (_zoomWidthRate == _zoomWidthMin)
-      $(".zoom-width[name='btn-zoom-out']").addClass('disable-link');
+      $(".zoom-width[name='btn-zoom-out']").addClassSVG('disable-link');
     else
-      $(".zoom-width[name='btn-zoom-out']").removeClass('disable-link');
+      $(".zoom-width[name='btn-zoom-out']").removeClassSVG('disable-link');
 
     if (_zoomWidthRate == _zoomWidthMax)
-      $(".zoom-width[name='btn-zoom-in']").addClass('disable-link');
+      $(".zoom-width[name='btn-zoom-in']").addClassSVG('disable-link');
     else
-      $(".zoom-width[name='btn-zoom-in']").removeClass('disable-link');
+      $(".zoom-width[name='btn-zoom-in']").removeClassSVG('disable-link');
   }
 
   function _getVesselData() {
@@ -2084,9 +1931,9 @@ var MapCanvas = (function () {
 
   function _displayLine(classNm, isVisible) {
     if (isVisible)
-      $("line." + classNm + "").removeClass('hide');
+      $("line." + classNm + "").removeClassSVG('hide');
     else
-      $("line." + classNm + "").addClass('hide');
+      $("line." + classNm + "").addClassSVG('hide');
   }
 
   function _changeVesselColor(type) {
