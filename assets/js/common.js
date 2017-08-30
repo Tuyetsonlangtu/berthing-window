@@ -108,6 +108,13 @@ var Common = (function () {
     return Math.round(num * 100) / 100
   }
 
+  function _checkIntersectRect(r1, r2) {
+    return !(r2.left > r1.right ||
+    r2.right < r1.left ||
+    r2.top > r1.bottom ||
+    r2.bottom < r1.top);
+  }
+
   return {
     format: _format,
     margin: _margin,
@@ -120,6 +127,7 @@ var Common = (function () {
     gridHeight: _gridHeight,
     getPosByBerthDir: _getPosByBerthDir,
     plusDate: _plusDate,
-    roundNumber: _roundNumber
+    roundNumber: _roundNumber,
+    checkIntersectRect: _checkIntersectRect
   }
 }());
