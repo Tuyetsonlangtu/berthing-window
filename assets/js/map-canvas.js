@@ -63,8 +63,8 @@ var MapCanvas = (function () {
    * .addClassSVG(className)
    * Adds the specified class(es) to each of the set of matched SVG elements.
    */
-  $.fn.addClassSVG = function(className){
-    $(this).attr('class', function(index, existingClassNames) {
+  $.fn.addClassSVG = function (className) {
+    $(this).attr('class', function (index, existingClassNames) {
       return ((existingClassNames !== undefined) ? (existingClassNames + ' ') : '') + className;
     });
     return this;
@@ -74,8 +74,8 @@ var MapCanvas = (function () {
    * .removeClassSVG(className)
    * Removes the specified class to each of the set of matched SVG elements.
    */
-  $.fn.removeClassSVG = function(className){
-    $(this).attr('class', function(index, existingClassNames) {
+  $.fn.removeClassSVG = function (className) {
+    $(this).attr('class', function (index, existingClassNames) {
       var re = new RegExp('\\b' + className + '\\b', 'g');
       return existingClassNames.replace(re, '');
     });
@@ -89,10 +89,10 @@ var MapCanvas = (function () {
 
     _previousDate = moment(strDate, Common.format);
     _rulerDateData = Common.createDateData(strDate, Common.format, number);
-    if(berthData) _berthData = berthData;
-    if(bitts) _bitts = bitts;
-    if(vesselData) _vesselData = vesselData;
-    if(config) {
+    if (berthData) _berthData = berthData;
+    if (bitts) _bitts = bitts;
+    if (vesselData) _vesselData = vesselData;
+    if (config) {
       _vslColorType = config.vslColor;
       _timeChange = config.timechange;
       _showRamp = config.displayRamp;
@@ -514,7 +514,7 @@ var MapCanvas = (function () {
         .text(_bitts[i].name);
     }
     _bitts = _.sortBy(_bitts, 'start_position');
-    console.log('_bitts: ', _bitts);
+    // console.log('_bitts: ', _bitts);
   }
 
   function _getBittByIdx(idx) {
@@ -568,7 +568,7 @@ var MapCanvas = (function () {
         console.log("isDup: ", isDup, rect1, rect2);
       }
     }
-   // console.log("vslInfo: ", vslInfo);
+    // console.log("vslInfo: ", vslInfo);
   }
 
   function _createVessel(vslData) {
@@ -1029,9 +1029,9 @@ var MapCanvas = (function () {
         .attr("originX1", sternRampLeft)
         .attr("originX2", sternRampLeft + sternRampWidth)
         .attr("x1", sternRampLeft)
-        .attr("y1",  _zoomInHeight(Common.rulerTop.height) - 1)
+        .attr("y1", _zoomInHeight(Common.rulerTop.height) - 1)
         .attr("x2", sternRampLeft + sternRampWidth)
-        .attr("y2",  _zoomInHeight(Common.rulerTop.height) - 1);
+        .attr("y2", _zoomInHeight(Common.rulerTop.height) - 1);
       rectGroup.append("line")
         .attr("stern-ramp-line-idx", vslData.id)
         .attr("class", "ruler-line ramp " + (_showRamp ? '' : 'hide'))
@@ -1075,9 +1075,9 @@ var MapCanvas = (function () {
         .attr("originX1", sideRampLeft)
         .attr("originX2", sideRampLeft + sideRampWidth)
         .attr("x1", sideRampLeft)
-        .attr("y1",  _zoomInHeight(Common.rulerTop.height) - 1)
+        .attr("y1", _zoomInHeight(Common.rulerTop.height) - 1)
         .attr("x2", sideRampLeft + sideRampWidth)
-        .attr("y2",  _zoomInHeight(Common.rulerTop.height) - 1);
+        .attr("y2", _zoomInHeight(Common.rulerTop.height) - 1);
       rectGroup.append("line")
         .attr("side-ramp-line-idx", vslData.id)
         .attr("class", "ruler-line ramp " + (_showRamp ? '' : 'hide'))
@@ -1126,7 +1126,7 @@ var MapCanvas = (function () {
       .attr('font-weight', 'bold')
       .text(Common.roundNumber(textRight))
 
-    if(vslData.status == 'P'){
+    if (vslData.status == 'P') {
       rectGroup.datum({x: 0, y: 0})
         .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
         .call(d3.drag()
@@ -1150,13 +1150,13 @@ var MapCanvas = (function () {
   function _showVesselRuler(vslId) {
     _hideVesselRuler();
     $("g.vessel-group[vsl-group-idx=" + vslId + "]").find('.ruler-line').addClassSVG('active');
-    $("#ruler-top-content").find('line.ruler-line[stern-ramp-ruler-idx='+vslId+']').addClassSVG('active');
-    $("#ruler-top-content").find('line.ruler-line[side-ramp-ruler-idx='+vslId+']').addClassSVG('active');
-    $("line[vessel-line-top-idx="+ vslId +"]").addClassSVG('active');
-    $("line[vessel-line-bottom-idx="+ vslId +"]").addClassSVG('active');
+    $("#ruler-top-content").find('line.ruler-line[stern-ramp-ruler-idx=' + vslId + ']').addClassSVG('active');
+    $("#ruler-top-content").find('line.ruler-line[side-ramp-ruler-idx=' + vslId + ']').addClassSVG('active');
+    $("line[vessel-line-top-idx=" + vslId + "]").addClassSVG('active');
+    $("line[vessel-line-bottom-idx=" + vslId + "]").addClassSVG('active');
   }
 
-  function _hideVesselRuler(){
+  function _hideVesselRuler() {
     $("#map-content-svg").find('.ruler-line').removeClassSVG('active');
     $("#ruler-top-content").find('line.ruler-line').removeClassSVG('active');
   }
@@ -1190,75 +1190,77 @@ var MapCanvas = (function () {
     $("rect[resize-bottom-idx=" + vslIdx + "]").hide();
   }
 
-  function _reCalcVesselInfo(target, x, y) {
+  function _reCalcVesselInfo(target, x, y, isMooring) {
     var vslIdx = target.attr('vsl-group-idx');
     var vslInfo = _getVslDrawInfo(vslIdx);
     if (!vslInfo) return;
 
-    var vslTop = vslInfo.vslTop + y;
-    var vslBottom = vslTop + vslInfo.vslHeight;
-    var vslLeft = vslInfo.vslLeft + x;
-    var vslRight = vslLeft + vslInfo.vslWidth;
+    var vslTop = vslInfo.vslTopOrigin + y;
+    var vslBottom = vslInfo.vslBottomOrigin + y;
+    var vslLeft = vslInfo.vslLeftOrigin + x;
+    var vslRight = vslInfo.vslRightOrigin + x;
+
     var vslBridge = vslInfo.vslBridge + x;
     var vslHead = vslInfo.vslHead + x;
 
-    var mooringDistance = _zoomInWidth(_mooringDistance);
-    var left = vslLeft - mooringDistance;
-    var right = vslRight + mooringDistance;
-    var bittLeft = _getBittLeftByPos(left, vslLeft);
-    var bittRight = _getBittRightByPos(right, vslRight);
+    if (isMooring) {
+      var mooringDistance = _zoomInWidth(_mooringDistance);
+      var left = vslLeft - mooringDistance;
+      var right = vslRight + mooringDistance;
+      var bittLeft = _getBittLeftByPos(left, vslLeft);
+      var bittRight = _getBittRightByPos(right, vslRight);
 
-    var originLeft = Common.getPosByBerthDir(_zoomOutWidth(vslLeft), _mapWidth, vslInfo.berthDir);
-    var originRight = Common.getPosByBerthDir(_zoomOutWidth(vslRight), _mapWidth, vslInfo.berthDir);
-    var mooringHead, mooringStern;
-    // console.log("bittLeft: ", bittLeft.name);
-    // console.log("bittRight: ", bittRight.name);
-    if (bittLeft && bittRight) {
-      if (vslInfo.vslDir == Common.vesselDir.leftRight) {
-        mooringHead = bittRight.idx;
-        mooringStern = bittLeft.idx;
-      }
-      else {
-        mooringHead = bittLeft.idx;
-        mooringStern = bittRight.idx;
-      }
-
-      _removeBittSelected();
-      _setBittColor(mooringHead);
-      _setBittColor(mooringStern);
-
-      var mooringTarget = $("rect[mooring-idx=" + vslIdx + "]");
-      var mooringWidth = Math.abs(bittLeft.start_position - bittRight.start_position);
-      var morringLeft = bittLeft.start_position - x;
-      var morringRight = morringLeft + mooringWidth;
-      if (mooringTarget) {
-        mooringTarget.attr('x', morringLeft);
-        mooringTarget.attr('width', mooringWidth);
-
-        //Mooring line left
-        if (!d3.select("line[mooring-line-left-idx=" + vslIdx + "]").empty()) {
-          d3.select("line[mooring-line-left-idx=" + vslIdx + "]")
-            .attr("x1", morringLeft)
-            .attr("x2", morringLeft);
+      var originLeft = Common.getPosByBerthDir(_zoomOutWidth(vslLeft), _mapWidth, vslInfo.berthDir);
+      var originRight = Common.getPosByBerthDir(_zoomOutWidth(vslRight), _mapWidth, vslInfo.berthDir);
+      var mooringHead, mooringStern;
+      if (bittLeft && bittRight) {
+        if (vslInfo.vslDir == Common.vesselDir.leftRight) {
+          mooringHead = bittRight.idx;
+          mooringStern = bittLeft.idx;
+        }
+        else {
+          mooringHead = bittLeft.idx;
+          mooringStern = bittRight.idx;
         }
 
-        if (!d3.select("line[mooring-line-right-idx=" + vslIdx + "]").empty()) {
-          d3.select("line[mooring-line-right-idx=" + vslIdx + "]")
-            .attr("x1", morringRight + 1)
-            .attr("x2", morringRight + 1);
+        _removeBittSelected();
+        _setBittColor(mooringHead);
+        _setBittColor(mooringStern);
+
+        var mooringTarget = $("rect[mooring-idx=" + vslIdx + "]");
+        var mooringWidth = Math.abs(bittLeft.start_position - bittRight.start_position);
+        var morringLeft = bittLeft.start_position - x;
+        var morringRight = morringLeft + mooringWidth;
+        if (mooringTarget) {
+          mooringTarget.attr('x', morringLeft);
+          mooringTarget.attr('width', mooringWidth);
+
+          //Mooring line left
+          if (!d3.select("line[mooring-line-left-idx=" + vslIdx + "]").empty()) {
+            d3.select("line[mooring-line-left-idx=" + vslIdx + "]")
+              .attr("x1", morringLeft)
+              .attr("x2", morringLeft);
+          }
+
+          if (!d3.select("line[mooring-line-right-idx=" + vslIdx + "]").empty()) {
+            d3.select("line[mooring-line-right-idx=" + vslIdx + "]")
+              .attr("x1", morringRight + 1)
+              .attr("x2", morringRight + 1);
+          }
         }
-      }
 
-      var bittLeftText = $("text[mooring-text-left=" + vslIdx + "]");
-      if (bittLeftText) {
-        bittLeftText.text(bittLeft.name);
-        bittLeftText.attr('x', morringLeft + 2);
-      }
+        var bittLeftText = $("text[mooring-text-left=" + vslIdx + "]");
+        if (bittLeftText) {
+          bittLeftText.text(bittLeft.name);
+          bittLeftText.attr('x', morringLeft + 2);
+        }
 
-      var bittRightText = $("text[mooring-text-right=" + vslIdx + "]");
-      if (bittRightText) {
-        bittRightText.text(bittRight.name);
-        bittRightText.attr('x', morringRight - 2);
+        var bittRightText = $("text[mooring-text-right=" + vslIdx + "]");
+        if (bittRightText) {
+          bittRightText.text(bittRight.name);
+          bittRightText.attr('x', morringRight - 2);
+        }
+
       }
 
       var textLeft = $("text[text-left=" + vslIdx + "]");
@@ -1271,6 +1273,9 @@ var MapCanvas = (function () {
       var bridgeText = $("text[bridge-text=" + vslIdx + "]");
       if (bridgeObj && textRight)
         bridgeText.text(bridgeObj.text);
+
+      _vslInfo.mooring_head = mooringHead;
+      _vslInfo.mooring_stern = mooringStern;
     }
 
     //vessel line
@@ -1305,13 +1310,7 @@ var MapCanvas = (function () {
         .attr("x2", parseFloat(x2) + x);
     }
 
-    $("line[ruler-line=" + vslIdx + "]")
-      .attr('y1', -y);
-
-    // d3.select('rect[resize-top-idx='+ vslIdx +']').attr("y", function(d) {
-    //   return d.y = vslTop;
-    // })
-
+    $("line[ruler-line=" + vslIdx + "]").attr('y1', -y);
 
     var startDate = _getVesselDateFromPos(vslTop);
     var endDate = _getVesselDateFromPos(vslBottom);
@@ -1319,17 +1318,16 @@ var MapCanvas = (function () {
 
     _vslInfo.id = vslIdx;
     _vslInfo.head_position = Common.roundNumber(Common.getPosByBerthDir(_zoomOutWidth(vslHead), _mapWidth, vslInfo.berthDir));
-    _vslInfo.mooring_head = mooringHead;
-    _vslInfo.mooring_stern = mooringStern;
     _vslInfo.eta_date = moment(startDate).format('DD/MM/YYYY HH:mm');
     _vslInfo.etd_date = moment(endDate).format('DD/MM/YYYY HH:mm');
     _updateVesselData(_vslInfo);
 
-    // _vslDrawInfo.id = vslIdx;
-    // _vslDrawInfo.vslTop = vslInfo.vslTop + y;
-    // _vslDrawInfo.vslLeft = vslInfo.vslLeft + x;
-    // _vslDrawInfo.vslRight = vslInfo.vslLeft + vslInfo.vslWidth +  ;
-    // _vslDrawInfo.vslBottom = vslInfo.vslTop + vslInfo.vslHeight + y ;
+    //console.log("vslTop, vslLeft: ", vslTop, vslLeft);
+    _vslDrawInfo.id = vslIdx;
+    _vslDrawInfo.vslTop = vslTop;
+    _vslDrawInfo.vslLeft = vslLeft;
+    _vslDrawInfo.vslRight = vslRight;
+    _vslDrawInfo.vslBottom = vslBottom;
   }
 
   function _updateVesselData(vslData) {
@@ -1349,8 +1347,16 @@ var MapCanvas = (function () {
 
       if (vslData.etd_date)
         vslObj.etd_date = vslData.etd_date;
-      console.log("data Changed: ", vslObj);
+
+      console.log("eta_date: " + vslObj.eta_date, " etd_date: " + vslObj.etd_date);
     }
+
+    _vslInfo.id = null;
+    _vslInfo.head_position = null;
+    _vslInfo.mooring_head = null;
+    _vslInfo.mooring_stern = null;
+    _vslInfo.eta_date = null;
+    _vslInfo.etd_date = null;
   }
 
   function _getVesselById(id) {
@@ -1576,18 +1582,19 @@ var MapCanvas = (function () {
     }
     _currentPoint.x = d3.event.x;
     _currentPoint.y = d3.event.y;
-    _moveVessel(d3.select(this), d3.select(this).attr('vsl-group-idx'), d3.event.x, d3.event.y, d, true, false , false);
+    _moveVessel(d3.select(this), d3.select(this).attr('vsl-group-idx'), d3.event.x, d3.event.y, true, false, false);
   }
 
-  function _moveVessel(target, vslIdx, dx, dy, d, isDrag, isUpDown, isLeftRight) {
+  function _moveVessel(target, vslIdx, dx, dy, isDrag, isUpDown, isLeftRight) {
     var vslInfo = _getVslDrawInfo(vslIdx);
     var left = 0, width = 0, right = 0, top = 0, bottom = 0;
 
     if (vslInfo) {
-      left = vslInfo.vslLeft - _zoomInWidth(_mooringDistance);
-      right = vslInfo.vslRight + _zoomInWidth(_mooringDistance);
-      top = vslInfo.vslTop;
-      bottom = vslInfo.vslBottom;
+      left = vslInfo.vslLeftOrigin - _zoomInWidth(_mooringDistance);
+      right = vslInfo.vslRightOrigin + _zoomInWidth(_mooringDistance);
+      top = vslInfo.vslTopOrigin;
+      bottom = vslInfo.vslBottomOrigin;
+
       var minPos = _getMinBerthPos();
       var maxPos = _getMaxBerthPos();
       var gridHeight = _timeChange == 30 ? (_zoomInHeight(Common.gridHeight) / 2) : _zoomInHeight(Common.gridHeight);
@@ -1599,11 +1606,6 @@ var MapCanvas = (function () {
 
       _dx = x;
       _dy = y;
-      if (d) {
-        d.x = _dx;
-        d.y = _dy;
-      }
-
       if (isDrag || isLeftRight) {
         width = vslInfo.vslWidth + 2 * _zoomInWidth(_mooringDistance);
         var mooringTarget = $("rect[mooring-idx=" + vslIdx + "]");
@@ -1616,9 +1618,16 @@ var MapCanvas = (function () {
         mooringTarget.attr('x', left);
         mooringTarget.attr('width', width);
       }
-      target.attr("transform", "translate(" + _dx + "," + _dy + ")");
-      _reCalcVesselInfo(target, _dx, _dy);
-      // if (isUpDown || isLeftRight) _reCalcVesselInfo(target, _dx, _dy);
+
+      target.attr("transform", function (d) {
+        d.x = _dx;
+        d.y = _dy
+        return "translate(" + _dx + "," + _dy + ")";
+      });
+      _reCalcVesselInfo(target, _dx, _dy, !isUpDown);
+      if (isUpDown || isLeftRight) {
+        _updateVslDrawInfo();
+      }
     }
   }
 
@@ -1632,7 +1641,7 @@ var MapCanvas = (function () {
 
   function _moveUpDown(type) {
     if (!_d3VslSelected) return;
-    if(_d3VslSelected.attr('vsl-status') != 'P') return;
+    if (_d3VslSelected.attr('vsl-status') != 'P') return;
 
     var vslIdx = _d3VslSelected.attr('vsl-idx');
     var target = d3.select(".vessel-group[vsl-group-idx=" + vslIdx + "]");
@@ -1643,12 +1652,12 @@ var MapCanvas = (function () {
       dy += gridHeight;
     else
       dy -= gridHeight;
-    _moveVessel(target, vslIdx, dx, dy, null, false, true, false);
+    _moveVessel(target, vslIdx, dx, dy, false, true, false);
   }
 
   function _moveLeftRight(type) {
     if (!_d3VslSelected) return;
-    if(_d3VslSelected.attr('vsl-status') != 'P') return;
+    if (_d3VslSelected.attr('vsl-status') != 'P') return;
 
     var movementDistance = _zoomInWidth(_movementDistance);
     var vslIdx = _d3VslSelected.attr('vsl-idx');
@@ -1659,14 +1668,14 @@ var MapCanvas = (function () {
       dx -= movementDistance;
     else
       dx += movementDistance;
-    _moveVessel(target, vslIdx, dx, dy, null, false, false, true);
+    _moveVessel(target, vslIdx, dx, dy, false, false, true);
   }
 
   function _dragended(d) {
     if (d3.select(this).attr('drag-stop')) return;
     if (_dx && _dy) {
-      _reCalcVesselInfo(d3.select(this), _dx, _dy);
-      // _updateVslDrawInfo();
+      _reCalcVesselInfo(d3.select(this), _dx, _dy, true);
+      _updateVslDrawInfo();
       _checkVesselDupplicate(d3.select(this).attr("vsl-group-idx"));
     }
   }
@@ -1684,22 +1693,22 @@ var MapCanvas = (function () {
     });
 
     //Vessel
-    if(!d3.select("rect[vsl-idx=" + vslId + "]").empty()){
+    if (!d3.select("rect[vsl-idx=" + vslId + "]").empty()) {
       d3.select("rect[vsl-idx=" + vslId + "]")
         .attr("height", _heightTMP - 1);
     }
 
     //Mooring box
-    if(!d3.select("rect[mooring-idx=" + vslId + "]").empty()){
+    if (!d3.select("rect[mooring-idx=" + vslId + "]").empty()) {
       d3.select("rect[mooring-idx=" + vslId + "]")
         .attr("height", _heightTMP - 1);
     }
 
     //Bridge
-    if(!d3.select("line[vsl-bridge-idx=" + vslId + "]").empty()){
+    if (!d3.select("line[vsl-bridge-idx=" + vslId + "]").empty()) {
       d3.select("line[vsl-bridge-idx=" + vslId + "]").attr("y2", vslBottom);
     }
-    if(!d3.select("text[bridge-text=" + vslId + "]").empty()){
+    if (!d3.select("text[bridge-text=" + vslId + "]").empty()) {
       d3.select("text[bridge-text=" + vslId + "]").attr("y", vslBottom - 5);
     }
 
@@ -1712,12 +1721,12 @@ var MapCanvas = (function () {
     }
 
     //Mooring text left, right
-    if(!d3.select("text[text-left=" + vslId + "]").empty()){
+    if (!d3.select("text[text-left=" + vslId + "]").empty()) {
       d3.select("text[text-left=" + vslId + "]")
         .attr("y", vslBottom - 8)
     }
 
-    if(!d3.select("text[text-right=" + vslId + "]").empty()){
+    if (!d3.select("text[text-right=" + vslId + "]").empty()) {
       d3.select("text[text-right=" + vslId + "]")
         .attr("y", vslBottom - 8);
     }
@@ -1731,20 +1740,20 @@ var MapCanvas = (function () {
     }
 
     //Stern ramp
-    if(!d3.select("line[stern-ramp-idx=" + vslId + "]").empty()){
+    if (!d3.select("line[stern-ramp-idx=" + vslId + "]").empty()) {
       d3.select("line[stern-ramp-idx=" + vslId + "]")
         .attr("y1", vslBottom - 3)
         .attr("y2", vslBottom - 3);
     }
 
     //Side ramp
-    if(!d3.select("line[side-ramp-idx=" + vslId + "]").empty()){
+    if (!d3.select("line[side-ramp-idx=" + vslId + "]").empty()) {
       d3.select("line[side-ramp-idx=" + vslId + "]")
         .attr("y1", vslBottom - 3)
         .attr("y2", vslBottom - 3);
     }
 
-    if(!d3.select("line[vessel-line-bottom-idx=" + vslId + "]").empty()){
+    if (!d3.select("line[vessel-line-bottom-idx=" + vslId + "]").empty()) {
       d3.select("line[vessel-line-bottom-idx=" + vslId + "]")
         .attr('y1', vslBottom)
         .attr('y2', vslBottom);

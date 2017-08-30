@@ -161,16 +161,17 @@ $(document).ready(function () {
     "end_position_original": null,
     "berth_idx": "0"
   },
-    {
-      "id": 14,
-      "idx": 14,
-      "name": "15",
-      "start_position": 0,
-      "end_position": 0,
-      "start_position_original": 370,
-      "end_position_original": null,
-      "berth_idx": "1"
-    }]
+    // {
+    //   "id": 14,
+    //   "idx": 14,
+    //   "name": "15",
+    //   "start_position": 0,
+    //   "end_position": 0,
+    //   "start_position_original": 370,
+    //   "end_position_original": null,
+    //   "berth_idx": "1"
+    // }
+  ]
   var vesselData = [{
     "id": "CAT00100012016",
     "berth_id": "0",
