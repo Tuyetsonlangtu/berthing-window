@@ -569,9 +569,10 @@ var MapCanvas = (function () {
       if (_vesselData[i].id != id && !_vesselData[i].data_error) {
         vslInfo = _getVslDrawInfo(_vesselData[i].id);
         var rect2 = {top: vslInfo.vslTop, left: vslInfo.vslLeft, right: vslInfo.vslRight, bottom: vslInfo.vslBottom}
-        var isDup = Common.checkIntersectRect(rect1, rect2);
-        return true;
-        console.log("vessel is duplicate: ", isDup);
+        if (Common.checkIntersectRect(rect1, rect2)) {
+          console.log("vessel is duplicate: ", true);
+          return true;
+        }
       }
     }
     return false;
@@ -1622,7 +1623,10 @@ var MapCanvas = (function () {
     if (_dx && _dy) {
       _reCalcVesselInfo(d3.select(this), _dx, _dy, true);
       _updateVslDrawInfo();
-      _checkVesselDupplicate(d3.select(this).attr("vsl-group-idx"));
+      var isError = _checkVesselDupplicate(d3.select(this).attr("vsl-group-idx"));
+      if (isError) {
+       _showMessage('Notification', "<p>The bitt of vessel berthing position can't be used for another vessel.</p>");
+      }
     }
   }
 
@@ -1990,6 +1994,12 @@ var MapCanvas = (function () {
           break;
       }
     });
+
+    $('a.btn-ok, #btn_close').unbind('click');
+    $('a.btn-ok, #btn_close').click(function () {
+      $('#dialog-overlay, #dialog-box').hide();
+      return false;
+    });
   }
 
   function _enableOrDisableZoom() {
@@ -2063,7 +2073,8 @@ var MapCanvas = (function () {
         errMsg += _vesselData[i].code + ", ";
       }
     }
-    if (isError) _showMessage('', errMsg);
+
+    if (isError) _showMessage('Notification', "<p>The bitt of vessel berthing position can't be used for another vessel.</p>" + "<p style='color: red;'>"+errMsg.substr(0,errMsg.length -2)+"</p>");
     return isError;
   }
 
@@ -2084,7 +2095,8 @@ var MapCanvas = (function () {
         }
       }
     }
-    if (isError) _showMessage('', errMsg);
+
+    if (isError) _showMessage('Notification', "<p>Vessel Position is not valid.</p>"+ "<p>Check Berth Group.</p>" + "<p style='margin-top: 5px;'>" + isError.substr(0, isError.length - 2) + "</p>");
     return isError;
   }
 
@@ -2106,6 +2118,28 @@ var MapCanvas = (function () {
     return _.find(_berthArr, function (obj) {
       return obj.id == id;
     })
+  }
+
+  //Popup dialog
+  function _showMessage(title,message,type) {
+    if (type == "error") {
+      $("div.dialog-title").css("background", "red");
+      $("div.dialog-content a").css("background", "red");
+    }
+    else {
+      $("div.dialog-title").css("background", "#59A9FD");
+      $("div.dialog-content a").css("background", "#59A9FD");
+    }
+
+    var maskHeight = $(document).height();
+    var maskWidth = $(window).width();
+    var dialogTop = (maskHeight / 3) - ($('#dialog-box').height());
+    var dialogLeft = (maskWidth / 2) - ($('#dialog-box').width() / 2);
+
+    $('#dialog-overlay').css({height: maskHeight, width: maskWidth}).show();
+    $('#dialog-box').css({top: "40%", left: dialogLeft}).show();
+    $("#dialog-title").html(title);
+    $('#dialog-message').html(message);
   }
 
   return {
