@@ -41,6 +41,7 @@ html, body {
   border-radius: 15px;
   position: relative;
 }
+
 .btn-circle.btn-lg {
   width: 25px;
   height: 25px;
@@ -54,6 +55,7 @@ html, body {
   height: 8px;
   padding: 8px;
 }
+
 .btn-circle.btn-xl {
   width: 70px;
   height: 70px;
@@ -87,23 +89,24 @@ html, body {
   border: 1px solid #ABABAB;
 }
 
-#berthing-windown .toolbar .row{
+#berthing-windown .toolbar .row {
   width: 100%;
   height: 35px;
   position: relative;
 }
 
-#berthing-windown .toolbar .row a i{
+#berthing-windown .toolbar .row a i {
   margin-top: -4px;
   position: absolute;
   left: 5px;
 }
+
 #berthing-windown .toolbar .row a {
   margin-top: 5px;
   margin-left: 2px;
 }
 
-#berthing-windown #ruler-top-content{
+#berthing-windown #ruler-top-content {
   width: calc(100% - 95px);
   height: 100%;
   float: left;
@@ -117,7 +120,7 @@ html, body {
 
 }
 
-#ruller-left{
+#ruller-left {
   width: 90px;
   height: calc(100% - 115px);
   overflow-y: scroll;
@@ -143,11 +146,13 @@ html, body {
 #bottom-scroll::-webkit-scrollbar {
   height: 24px;
 }
+
 ::-webkit-scrollbar-thumb {
   background-color: rgb(185, 185, 185);
 }
+
 ::-webkit-scrollbar-track {
-  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
   background-color: #F5F5F5;
 }
 
@@ -169,7 +174,7 @@ rect, line {
   stroke-opacity: 1;
 }
 
-.map-content-grid line{
+.map-content-grid line {
   stroke: #ABABAB;
   stroke-opacity: 1;
 }
@@ -182,17 +187,17 @@ rect, line {
   display: none;
 }
 
-.vessel-rect.active{
+.vessel-rect.active {
   stroke: #00FF28;
   /*stroke-dasharray: 8,4;*/
   opacity: 0.9;
 }
 
-.ruler-line{
+.ruler-line {
   display: none;
 }
 
-.ruler-line.active{
+.ruler-line.active {
   display: block;
 }
 
@@ -200,7 +205,7 @@ rect, line {
   visibility: hidden;
 }
 
-.bridge.hide{
+.bridge.hide {
   visibility: hidden;
 }
 
@@ -208,19 +213,21 @@ rect, line {
   visibility: hidden;
 }
 
-#dialog-overlay{
-  width:100%;
-  height:100%;
-  filter:alpha(opacity=50);
-  -moz-opacity:0.5;
+#dialog-overlay {
+  width: 100%;
+  height: 100%;
+  filter: alpha(opacity=50);
+  -moz-opacity: 0.5;
   -khtml-opacity: 0.5;
   opacity: 0.5;
-  background:#000;
-  position:absolute;
-  top:0; left:0;
-  z-index:3000;
-  display:none;
+  background: #000;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3000;
+  display: none;
 }
+
 #dialog-box {
 
   /* css3 drop shadow */
@@ -231,27 +238,27 @@ rect, line {
   -moz-border-radius: 1px;
   -webkit-border-radius: 1px;
 
-  background:white;
+  background: white;
   /* styling of the dialog box, i have a fixed dimension for this demo */
-  width:328px;
+  width: 328px;
 
   /* make sure it has the highest z-index */
-  position:absolute;
-  z-index:5000;
+  position: absolute;
+  z-index: 5000;
 
   /* hide it by default */
-  display:none;
+  display: none;
   height: 145px;
   position: absolute;
 }
 
 #dialog-box .dialog-content {
   /* style the content */
-  text-align:left;
-  padding:10px;
-  color:#666;
-  font-family:arial;
-  font-size:11px;
+  text-align: left;
+  padding: 10px;
+  color: #666;
+  font-family: arial;
+  font-size: 11px;
   height: 100px;
 }
 
@@ -263,16 +270,14 @@ rect, line {
   cursor: move;
 }
 
-#dialog-box .dialog-title span
-{
+#dialog-box .dialog-title span {
   color: white;
   margin-top: 5px;
   position: absolute;
   margin-left: 5px;
 }
 
-#dialog-box .dialog-title a
-{
+#dialog-box .dialog-title a {
   position: absolute;
   text-decoration: none;
   position: absolute;
@@ -281,14 +286,15 @@ rect, line {
   font-weight: bold;
   font-size: 14px;
 }
-#dialog-box .dialog-title a:hover{
+
+#dialog-box .dialog-title a:hover {
   background: #FF6666;
 }
 
-#dialog-message
-{
+#dialog-message {
   font-size: 13px;
 }
+
 a.button {
   text-align: center;
   display: block;
@@ -299,7 +305,7 @@ a.button {
   font-weight: bold;
   background-color: #59A9FD;
   -moz-border-radius: 1px;
-  -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   position: relative;
   cursor: pointer;
   position: static;
@@ -319,7 +325,62 @@ a.button:hover {
 }
 
 #dialog-box .dialog-content ul {
-  margin:10px 0 10px 20px;
-  padding:0;
-  height:50px;
+  margin: 10px 0 10px 20px;
+  padding: 0;
+  height: 50px;
+}
+
+/*css tabs*/
+#tab-menu {
+  position: absolute;
+  width: 370px;
+  background: rgb(98, 103, 110);
+  opacity: 0.9;
+  border: 1px solid rgb(50, 119, 179);
+  font-size: 14px;
+  z-index: 99999;
+  display: none;
+  padding-bottom: 10px;
+}
+
+#tab-head {
+  height: 31px;
+  width: 100%;
+  background: #2a2626;
+}
+
+#tab-content {
+  width: 100%;
+  height: auto;
+}
+
+#tab-menu table tr td:first-child {
+  color: #fffc38;
+  text-align: right;
+  padding-right: 20px;
+  width: 135px;
+}
+
+#tab-menu table tr {
+  line-height: 1.5em;
+}
+
+#btn_close_tooltip {
+  float: right;
+}
+
+#btn_close_tooltip img {
+  width: 28px;
+  height: 28px;
+  border: 1px solid white;
+}
+
+#btn_open_new_tab {
+  float: right;
+  margin-right: 2px;
+}
+
+#btn_open_new_tab img {
+  width: 31px;
+  height: 31px;
 }

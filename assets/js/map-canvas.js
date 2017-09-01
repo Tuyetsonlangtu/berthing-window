@@ -50,7 +50,7 @@ var MapCanvas = (function () {
     vslLeftOrigin: null,
     vslRightOrigin: null
   }
-
+  var _vslIdHover = null;
   var _d3VslSelected = null;
   var _isFlag = false;
   var _keyCode = {
@@ -724,18 +724,18 @@ var MapCanvas = (function () {
       .attr("mooring-right", mooringRight)
       .on("mouseover", function () {
         var target = d3.select(this);
-        var vslIdx = target.attr('vsl-group-idx');
+        _vslIdHover = target.attr('vsl-group-idx');
         target.classed("active", true);
         target.style('cursor', 'move');
-        _vesselMouseover(vslIdx);
+        _vesselMouseover(_vslIdHover);
         _isFlag = true;
       })
       .on("mouseout", function () {
         var target = d3.select(this);
-        var vslIdx = target.attr('vsl-group-idx');
+        _vslIdHover = target.attr('vsl-group-idx');
         target.classed("active", false);
         target.style('cursor', 'default');
-        _vesselMouseout(vslIdx);
+        _vesselMouseout(_vslIdHover);
         _isFlag = false;
       })
 
@@ -1196,6 +1196,7 @@ var MapCanvas = (function () {
   function _vesselMouseout(vslIdx) {
     $("rect[resize-top-idx=" + vslIdx + "]").hide();
     $("rect[resize-bottom-idx=" + vslIdx + "]").hide();
+    _vslIdHover = null;
   }
 
   function _reCalcVesselInfo(target, x, y, isMooring) {
@@ -1359,7 +1360,7 @@ var MapCanvas = (function () {
 
       if (_vslInfo.etd_date)
         vslObj.etd_date = _vslInfo.etd_date;
-
+      vslObj.is_change = true;
       console.log("eta_date: " + vslObj.eta_date, " etd_date: " + vslObj.etd_date);
     }
 
@@ -1625,7 +1626,7 @@ var MapCanvas = (function () {
       _updateVslDrawInfo();
       var isError = _checkVesselDupplicate(d3.select(this).attr("vsl-group-idx"));
       if (isError) {
-       _showMessage('Notification', "<p>The bitt of vessel berthing position can't be used for another vessel.</p>");
+        _showMessage('Notification', "<p>The bitt of vessel berthing position can't be used for another vessel.</p>");
       }
     }
   }
@@ -2000,6 +2001,30 @@ var MapCanvas = (function () {
       $('#dialog-overlay, #dialog-box').hide();
       return false;
     });
+
+    $("#berthing-windown").unbind('contextmenu');
+    $("#berthing-windown").bind("contextmenu", function (event) {
+      event.preventDefault();
+      _showVesselInfoPopup(_vslIdHover);
+      console.log("_vslIdHover: ", _vslIdHover);
+    });
+
+    $("#btn_close_all_tab_img").unbind();
+    $("#btn_close_all_tab_img").click(function () {
+      _hideVesselInfoPopup();
+    });
+
+    $("#btn_open_new_tab").unbind();
+    $("#btn_open_new_tab").click(function () {
+      _openVesselInfoLink();
+    });
+  }
+
+  function _openVesselInfoLink() {
+    if (_dataFilter) {
+      var url = "vsl_cd=" + _dataFilter.vsl_cd + "&voy_ed=" + _dataFilter.voy_ed + "&vsl_sts=" + _dataFilter.vsl_sts + "&eta_date=" + _dataFilter.eta_date + "&etb_date=" + _dataFilter.etb_date + "&etd_date=" + _dataFilter.etd_date + "&berth_id=" + _dataFilter.berth_id + "&pgmNo=" + menuNo + "&parentPgmNo=" + parentMenuNo;
+      window.open('UI_PNO_01.do?' + url, '_blank');
+    }
   }
 
   function _enableOrDisableZoom() {
@@ -2141,6 +2166,97 @@ var MapCanvas = (function () {
     $("#dialog-title").html(title);
     $('#dialog-message').html(message);
   }
+
+  var _dataFilter = null;
+  function _showVesselInfoPopup(vslId) {
+    var vslData = _getVesselById(vslId);
+    if (!vslData) return;
+
+    $("#tab-title").text(vslData.code);
+    var format = "DD/MM/YYYY hh:mm";
+    var ETB_date = "";
+    if (vslData.etb_date.length > 0)
+      ETB_date = moment(vslData.etb_date, format).format("YYYY-MM-DD HH:mm")
+
+    var ETA_date = "";
+    if (vslData.eta_date.length > 0)
+      ETA_date = moment(vslData.eta_date, format).format("YYYY-MM-DD HH:mm");
+
+    var ETD_date = "";
+    if (vslData.etd_date.length > 0)
+      ETD_date = moment(vslData.etd_date, format).format("YYYY-MM-DD HH:mm");
+
+    var arrInfo = [
+      {'name': "VESSEL NAME", "value": vslData.name, "color": "#ffffff"},
+      {'name': "OPERATOR", "value": vslData.vsl_opr_nm, "color": "#ffffff"},
+      {'name': "VESSEL TYPE", "value": vslData.vsl_tp_nm, "color": "#ffffff"},
+      {
+        "name": vslData.ata_date != "" ? "ATA" : "ETA",
+        "value": vslData.ata_date != "" ? vslData.ata_date : ETB_date,
+        "color": vslData.ata_date != "" ? "#fffc38" : "#ffffff"
+      },
+      {
+        "name": vslData.atb_date != "" ? "ATB" : "ETB",
+        "value": vslData.atb_date != "" ? vslData.atb_date : ETA_date,
+        "color": vslData.atb_date != "" ? "#fffc38" : "#ffffff"
+      },
+      {
+        "name": vslData.atd_date != "" ? "ATD" : "ETD",
+        "value": vslData.atd_date != "" ? vslData.atd_date : ETD_date,
+        "color": vslData.atd_date != "" ? "#fffc38" : "#ffffff"
+      },
+      {
+        "name": "Est. Volume(D/L/R)",
+        "value": vslData.volume_d + "/" + vslData.volume_l + "/" + vslData.volume_r,
+        "color": "#ffffff"
+      }];
+
+    var $tabContent = $("#tab-content");
+    $tabContent.html("");
+    var content = "<table>";
+    for (var i = 0; i < arrInfo.length; i++) {
+      content += "<tr> <td valign='top'>" + arrInfo[i].name + "</td> <td><span style='color: " + arrInfo[i].color + ";'>" + arrInfo[i].value + "</span></td> </tr>";
+    }
+    content += "</table>";
+    $tabContent.append(content);
+
+    //Set data filter
+    _dataFilter = {
+      "vsl_cd": vslData.code.split("/")[0],
+      "voy_ed": vslData.code,
+      "vsl_sts": vslData.status_code,
+      "eta_date": moment(vslData.eta_date, "DD/MM/YYYY").format("YYYY-MM-DD"),
+      "etb_date": moment(vslData.etb_date, "DD/MM/YYYY").format("YYYY-MM-DD"),
+      "etd_date": moment(vslData.etd_date, "DD/MM/YYYY").format("YYYY-MM-DD"),
+      "berth_id": vslData.berth_id
+    };
+
+    var $rect = $("rect.vessel-rect[vsl-idx=" + vslId + "]");
+    var pos = $rect.offset();
+    var maxBottom = $("#berthing-windown").offset().top + $("#berthing-windown").height();
+    var top = pos.top + parseFloat($rect.attr("height"));
+    if($("#tab-menu").height() + top > maxBottom)
+      top = maxBottom - $("#tab-menu").height() - 20;
+
+    var $tabMenu = $("#tab-menu");
+    $tabMenu.removeAttr("style");
+    $tabMenu.offset({top: top, left: pos.left - 185 + parseFloat($rect.attr("width")) / 2});
+    $tabMenu.show();
+    console.log("top: ", pos.top + parseFloat($rect.attr("height")) + $("#tab-menu").height());
+  }
+
+  function _hideVesselInfoPopup() {
+    var tag_title = $("#tab-title");
+    if (tag_title)
+      tag_title.text("");
+
+    var tag_content = $("#tab-content");
+    if (tag_content)
+      tag_content.html("");
+
+    $("#tab-menu").hide();
+  }
+
 
   return {
     draw: _draw,
